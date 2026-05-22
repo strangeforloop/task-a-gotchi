@@ -1,0 +1,17 @@
+export const MOTIVATIONAL_MESSAGES = [
+  "you're doing great. proud of you.",
+  "one task. that's all. then a break.",
+  "the dishes will wait. you won't.",
+  "drink some water, friend.",
+  "you survived monday. ride or die.",
+  "small wins still count. all of them.",
+  "the inbox is not a person.",
+  "tomorrow you. would. love. this.",
+  "rest is not a reward. it's the fuel.",
+  "let the perfectionism go. just start.",
+  "you closed 6 tabs already. legend.",
+  "your past self is rooting for you.",
+  "the world's most productive cat is a nap.",
+  "deep breath. shoulders down. begin.",
+  "be the project manager of your own joy.",
+] as const;
