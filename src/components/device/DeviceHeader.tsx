@@ -17,7 +17,7 @@ export function DeviceHeader({ title = 'TASK-O-GOTCHI', level = 3, subtitle = 'P
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center' },
-  title: { fontSize: 9, color: '#aaa', fontFamily: 'monospace' },
-  sub: { fontSize: 9, color: '#aaa', fontFamily: 'monospace' },
+  container: { alignItems: 'center', gap: 2 },
+  title: { fontSize: 10, color: 'rgba(60,38,8,0.75)', fontFamily: 'monospace', fontWeight: '700', letterSpacing: 1 },
+  sub: { fontSize: 8, color: 'rgba(60,38,8,0.5)', fontFamily: 'monospace', fontWeight: '600', letterSpacing: 0.5 },
 });
