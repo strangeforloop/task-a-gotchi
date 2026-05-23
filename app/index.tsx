@@ -58,7 +58,7 @@ export default function HomeScreen() {
   const onC = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setToast({ visible: true, message: pickMessage() });
-    setTimeout(() => setToast(t => ({ ...t, visible: false })), 3800);
+    setTimeout(() => setToast(t => ({ ...t, visible: false })), 5500);
   };
 
   return (

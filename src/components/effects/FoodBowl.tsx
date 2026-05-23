@@ -1,28 +1,61 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 
-interface Props {
-  visible: boolean;
-  ink?: string;
+// 9×9 pixel cookie — '#' = ink, '.' = transparent
+const COOKIE_ROWS = [
+  '..#####..',
+  '.#######.',
+  '###.#.###',
+  '#########',
+  '##.###.##',
+  '#########',
+  '###.#.###',
+  '.#######.',
+  '..#####..',
+];
+
+const CELL = 3;
+const INK = '#1F2410';
+
+function PixelCookie() {
+  return (
+    <View>
+      {COOKIE_ROWS.map((row, y) => (
+        <View key={y} style={styles.row}>
+          {row.split('').map((ch, x) => (
+            <View
+              key={x}
+              style={{ width: CELL, height: CELL, backgroundColor: ch === '#' ? INK : 'transparent' }}
+            />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
 }
 
-function Cookie() {
+function AnimatedCookie() {
   const scale = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.sequence([
       Animated.spring(scale, { toValue: 1, friction: 5, tension: 100, useNativeDriver: true }),
-      Animated.delay(600),
+      Animated.delay(700),
       Animated.timing(opacity, { toValue: 0, duration: 350, useNativeDriver: true }),
     ]).start();
   }, []);
 
   return (
-    <Animated.Text style={[styles.cookie, { transform: [{ scale }], opacity }]}>
-      🍪
-    </Animated.Text>
+    <Animated.View style={{ transform: [{ scale }], opacity }}>
+      <PixelCookie />
+    </Animated.View>
   );
+}
+
+interface Props {
+  visible: boolean;
+  ink?: string;
 }
 
 export function FoodBowl({ visible }: Props) {
@@ -37,12 +70,19 @@ export function FoodBowl({ visible }: Props) {
   if (!visible) return null;
   return (
     <View style={styles.overlay} pointerEvents="none">
-      <Cookie key={gen} />
+      <AnimatedCookie key={gen} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 5 },
-  cookie: { fontSize: 36 },
+  overlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingRight: 10,
+    zIndex: 5,
+  },
+  row: { flexDirection: 'row' },
 });
