@@ -58,14 +58,12 @@ export default function HomeScreen() {
   const onC = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setToast({ visible: true, message: pickMessage() });
-    setTimeout(() => setToast(t => ({ ...t, visible: false })), 3200);
+    setTimeout(() => setToast(t => ({ ...t, visible: false })), 3800);
   };
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.screen}>
-        <MessageToast message={toast.message} visible={toast.visible} />
-
         <HPHeader
           hp={hp}
           deadHours={0}
@@ -94,6 +92,10 @@ export default function HomeScreen() {
           </DeviceShell>
         </View>
 
+        <View style={styles.speechSlot}>
+          <MessageToast message={toast.message} visible={toast.visible} />
+        </View>
+
         <ScrollView
           style={styles.taskScroll}
           contentContainerStyle={styles.taskContent}
@@ -119,6 +121,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAF7F0' },
   deviceArea: { alignItems: 'center', paddingVertical: 8 },
   petStage: { alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' },
+  speechSlot: { height: 52, justifyContent: 'center' },
   taskScroll: { flex: 1 },
   taskContent: { paddingTop: 4 },
   calBtn: { position: 'absolute', top: 56, right: 18, width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.9)' },
