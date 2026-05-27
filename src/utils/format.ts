@@ -42,6 +42,29 @@ export function formatScheduledTime(hhmm: string): string {
 }
 
 /**
+ * Returns the display clock time for any task type:
+ *   - habit/overdue habit with scheduledTime → formatScheduledTime(scheduledTime)
+ *   - habit or template without scheduledTime → "8:00 AM" (start-of-day default)
+ *   - one-off task with createdAt → wall-clock time of that timestamp
+ *   - fallback → "8:00 AM"
+ */
+export function formatTaskTime(
+  source: string,
+  createdAt?: number,
+  habitScheduledTime?: string,
+): string {
+  if (habitScheduledTime) return formatScheduledTime(habitScheduledTime);
+  if (source === 'habit' || source === 'template') return '8:00 AM';
+  if (createdAt != null) {
+    const d = new Date(createdAt);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return formatScheduledTime(`${hh}:${mm}`);
+  }
+  return '8:00 AM';
+}
+
+/**
  * Returns a "Xm late" / "Xh late" label if the current time is ≥10 min
  * past the scheduled time, otherwise undefined.
  * @param hhmm  "HH:MM" scheduled time

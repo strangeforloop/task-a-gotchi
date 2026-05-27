@@ -4,9 +4,8 @@ import type { Task } from '../../types';
 import { CheckCircle } from './CheckCircle';
 import { HabitDots } from './HabitDots';
 import {
-  formatAdded,
+  formatTaskTime,
   formatHabitSince,
-  formatScheduledTime,
   formatOverdueDuration,
 } from '../../utils/format';
 
@@ -22,6 +21,7 @@ export function TaskRow({ task, onToggle }: Props) {
   const checkColor = isOverdue ? '#D85A30' : task.completed ? '#639922' : '#378ADD';
   const overdueDuration = isOverdue && task.dueDate ? formatOverdueDuration(task.dueDate) : '';
   const showBadge = isOverdue && (task.overduePoints ?? 0) > 0;
+  const timeDisplay = formatTaskTime(task.source, task.createdAt, task.habitScheduledTime);
 
   return (
     <View style={[styles.row, task.completed && styles.completed, isOverdue && styles.overdue]}>
@@ -32,18 +32,13 @@ export function TaskRow({ task, onToggle }: Props) {
           <Text style={[styles.title, task.completed && styles.titleDone]} numberOfLines={1}>
             {task.title}
           </Text>
-          {task.habitScheduledTime && (
-            <Text style={styles.timeBadge}>{formatScheduledTime(task.habitScheduledTime)}</Text>
-          )}
+          <Text style={[styles.timeBadge, { color: sourceDot }]}>{timeDisplay}</Text>
         </View>
         {isOverdue && (
           <View style={styles.metaRow}>
             <Text style={styles.overdueFrom}>{task.overdueFrom}</Text>
             {overdueDuration ? <Text style={styles.overdueDuration}>{overdueDuration}</Text> : null}
           </View>
-        )}
-        {!task.overdue && task.createdAt != null && (
-          <Text style={styles.addedLabel}>{formatAdded(task.createdAt)}</Text>
         )}
         {task.source === 'habit' && (task.habitCreatedAt || task.habitLateLabel) && (
           <View style={styles.habitMetaRow}>
@@ -86,8 +81,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3, marginLeft: 14 },
   overdueFrom: { fontSize: 11, fontWeight: '600', color: '#D85A30' },
   overdueDuration: { fontSize: 11, fontWeight: '400', color: 'rgba(216,90,48,0.55)' },
-  addedLabel: { fontSize: 11, color: 'rgba(60,60,67,0.38)', marginTop: 2, marginLeft: 14 },
-  timeBadge: { fontSize: 11, fontWeight: '600', color: '#16A8CA', marginLeft: 4 },
+  timeBadge: { fontSize: 11, fontWeight: '600', marginLeft: 4 },
   habitMetaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2, marginLeft: 14 },
   habitSince: { fontSize: 11, color: 'rgba(60,60,67,0.38)' },
   habitMetaSep: { fontSize: 11, color: 'rgba(60,60,67,0.25)' },
