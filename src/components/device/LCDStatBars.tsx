@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { PixelGlyph } from './PixelGlyph';
+import type { GlyphName } from '../../types';
 
 interface Props {
   hp: number;
@@ -7,16 +9,11 @@ interface Props {
   fc: number;
 }
 
-function SegBar({ label, value, segs }: { label: string; value: number; segs: number }) {
-  const filled = Math.round((value / 100) * segs);
+function StatIcon({ glyph, value }: { glyph: GlyphName; value: number }) {
   return (
-    <View style={styles.bar}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.segments}>
-        {Array.from({ length: segs }, (_, i) => (
-          <View key={i} style={[styles.seg, i < filled && styles.segFilled]} />
-        ))}
-      </View>
+    <View style={styles.stat}>
+      <PixelGlyph name={glyph} scale={2} />
+      <Text style={styles.val}>{String(value).padStart(3, '0')}</Text>
     </View>
   );
 }
@@ -24,18 +21,26 @@ function SegBar({ label, value, segs }: { label: string; value: number; segs: nu
 export function LCDStatBars({ hp, en, fc }: Props) {
   return (
     <View style={styles.row}>
-      <SegBar label="HP" value={hp} segs={11} />
-      <SegBar label="EN" value={en} segs={9} />
-      <SegBar label="FC" value={fc} segs={5} />
+      <StatIcon glyph="check" value={hp} />
+      <StatIcon glyph="pie" value={en} />
+      <StatIcon glyph="dot" value={fc} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4 },
-  bar: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  label: { fontSize: 8, color: '#1F2410', fontFamily: 'monospace', fontWeight: '800' },
-  segments: { flexDirection: 'row', gap: 1 },
-  seg: { width: 5, height: 8, borderWidth: 1, borderColor: '#1F2410' },
-  segFilled: { backgroundColor: '#1F2410' },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  stat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  val: {
+    fontSize: 8,
+    color: '#1F2410',
+    fontFamily: 'monospace',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
 });

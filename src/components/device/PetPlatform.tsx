@@ -7,9 +7,7 @@ interface Props {
 }
 
 export function PetPlatform({ state }: Props) {
-  return (
-    <View style={[styles.shadow, state === 'dead' && styles.dead]} />
-  );
+  return <View style={[styles.shadow, state === 'dead' && styles.dead]} />;
 }
 
 const styles = StyleSheet.create({

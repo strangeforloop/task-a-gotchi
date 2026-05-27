@@ -20,7 +20,33 @@ export function MessageToast({ message, visible }: Props) {
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingHorizontal: 16 },
-  bubble: { backgroundColor: '#1F2410', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, maxWidth: 280, alignItems: 'center' },
-  text: { color: '#E8E7D8', fontSize: 12, fontWeight: '600', textAlign: 'center', lineHeight: 16, fontFamily: 'monospace' },
-  tail: { position: 'absolute', top: -6, width: 12, height: 12, backgroundColor: '#1F2410', transform: [{ rotate: '45deg' }], borderRadius: 2 },
+  bubble: {
+    backgroundColor: '#FFF6E0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    maxWidth: 280,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+  },
+  text: {
+    color: '#3a2e1a',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 16,
+    fontFamily: 'monospace',
+  },
+  tail: {
+    position: 'absolute',
+    top: -6,
+    width: 12,
+    height: 12,
+    backgroundColor: '#FFF6E0',
+    transform: [{ rotate: '45deg' }],
+    borderRadius: 2,
+  },
 });

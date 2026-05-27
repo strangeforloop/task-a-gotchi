@@ -21,7 +21,18 @@ export function LCDTopRow({ overdueCount }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 4 },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: 4,
+  },
   cell: { flexDirection: 'row', alignItems: 'flex-start', gap: 2 },
-  count: { fontSize: 8, color: '#1F2410', fontFamily: 'monospace', fontWeight: '800', lineHeight: 10 },
+  count: {
+    fontSize: 8,
+    color: '#1F2410',
+    fontFamily: 'monospace',
+    fontWeight: '800',
+    lineHeight: 10,
+  },
 });

@@ -15,5 +15,11 @@ export function RevivalChip({ revival }: Props) {
 
 const styles = StyleSheet.create({
   chip: { backgroundColor: '#1F2410', paddingHorizontal: 8, paddingVertical: 3 },
-  text: { fontSize: 9, fontWeight: '800', color: '#B0BD78', letterSpacing: 1.4, fontFamily: 'monospace' },
+  text: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#B0BD78',
+    letterSpacing: 1.4,
+    fontFamily: 'monospace',
+  },
 });

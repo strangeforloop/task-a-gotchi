@@ -20,6 +20,8 @@ export function usePetAnimation(
 
   useEffect(() => {
     if (state === displayState) return;
+    // Intentionally set opacity to 0 synchronously so the crossfade starts immediately.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpacity(0);
     crossfadeRef.current = setTimeout(() => {
       setDisplayState(state);

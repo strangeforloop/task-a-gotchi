@@ -2,16 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 
 const HEARTS = [
-  { x: 18,  delay: 0   },
-  { x: 52,  delay: 110 },
-  { x: 86,  delay: 60  },
+  { x: 18, delay: 0 },
+  { x: 52, delay: 110 },
+  { x: 86, delay: 60 },
   { x: 120, delay: 180 },
-  { x: 155, delay: 30  },
+  { x: 155, delay: 30 },
 ];
 
 function FloatingHeart({ x, delay }: { x: number; delay: number }) {
-  const translateY = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  const [translateY] = useState(() => new Animated.Value(0));
+  const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.sequence([
@@ -24,7 +24,7 @@ function FloatingHeart({ x, delay }: { x: number; delay: number }) {
         ]),
       ]),
     ]).start();
-  }, []);
+  }, [delay, translateY, opacity]);
 
   return (
     <Animated.Text style={[styles.heart, { left: x, transform: [{ translateY }], opacity }]}>

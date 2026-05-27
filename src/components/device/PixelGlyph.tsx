@@ -12,14 +12,20 @@ interface Props {
 export function PixelGlyph({ name, color = LCD_INK, scale = 2 }: Props) {
   const rows = GLYPHS[name];
   if (!rows) return null;
+  const W = rows[0].length * scale;
+  const H = rows.length * scale;
   return (
-    <View style={styles.container}>
+    <View style={[styles.grid, { width: W, height: H }]}>
       {rows.map((row, y) => (
         <View key={y} style={styles.row}>
           {row.split('').map((ch, x) => (
             <View
               key={x}
-              style={{ width: scale, height: scale, backgroundColor: ch === '#' ? color : 'transparent' }}
+              style={{
+                width: scale,
+                height: scale,
+                backgroundColor: ch === '#' ? color : 'transparent',
+              }}
             />
           ))}
         </View>
@@ -29,6 +35,6 @@ export function PixelGlyph({ name, color = LCD_INK, scale = 2 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'column' },
+  grid: { flexDirection: 'column' },
   row: { flexDirection: 'row' },
 });

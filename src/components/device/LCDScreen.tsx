@@ -9,9 +9,7 @@ interface Props {
 export function LCDScreen({ children }: Props) {
   return (
     <View style={styles.bezel}>
-      <View style={styles.panel}>
-        {children}
-      </View>
+      <View style={styles.panel}>{children}</View>
     </View>
   );
 }

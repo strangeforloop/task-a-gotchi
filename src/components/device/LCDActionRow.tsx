@@ -9,8 +9,8 @@ interface Props {
 
 const ITEMS: { id: MenuId; label: string }[] = [
   { id: 'check', label: '✓' },
-  { id: 'pie',   label: '◔' },
-  { id: 'dot',   label: '●' },
+  { id: 'pie', label: '◔' },
+  { id: 'dot', label: '●' },
 ];
 
 export function LCDActionRow({ selected, onSelect }: Props) {

@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'expo-router';
 import { CharacterChooser } from '../src/components/pet/CharacterChooser';
-import type { CharacterId } from '../src/types';
+import { useProfile } from '../src/context/ProfileContext';
 
 export default function CharacterChooserScreen() {
   const router = useRouter();
-  const [current, setCurrent] = useState<CharacterId>('blip');
+  const { character, setCharacter } = useProfile();
   return (
     <CharacterChooser
-      open
       onClose={() => router.back()}
-      current={current}
-      onPick={(id) => { setCurrent(id); router.back(); }}
+      current={character}
+      onPick={id => {
+        setCharacter(id);
+        router.back();
+      }}
     />
   );
 }

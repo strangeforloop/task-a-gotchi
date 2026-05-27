@@ -25,7 +25,11 @@ function PixelCookie() {
           {row.split('').map((ch, x) => (
             <View
               key={x}
-              style={{ width: CELL, height: CELL, backgroundColor: ch === '#' ? INK : 'transparent' }}
+              style={{
+                width: CELL,
+                height: CELL,
+                backgroundColor: ch === '#' ? INK : 'transparent',
+              }}
             />
           ))}
         </View>
@@ -35,8 +39,8 @@ function PixelCookie() {
 }
 
 function AnimatedCookie() {
-  const scale = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
+  const [scale] = useState(() => new Animated.Value(0));
+  const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.sequence([
@@ -44,7 +48,7 @@ function AnimatedCookie() {
       Animated.delay(700),
       Animated.timing(opacity, { toValue: 0, duration: 350, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [scale, opacity]);
 
   return (
     <Animated.View style={{ transform: [{ scale }], opacity }}>
@@ -78,7 +82,10 @@ export function FoodBowl({ visible }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'flex-end',
     justifyContent: 'center',
     paddingRight: 10,

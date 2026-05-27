@@ -33,7 +33,7 @@ export function PetSprite({
   return (
     <View style={[styles.container, { opacity, width: W * cell }]}>
       {sprite.map((row, y) => (
-        <View key={y} style={{ flexDirection: 'row', height: cell }}>
+        <View key={y} style={[styles.row, { height: cell }]}>
           {row.split('').map((ch, x) => {
             let bg: string;
             if (ch === '.') {
@@ -53,4 +53,5 @@ export function PetSprite({
 
 const styles = StyleSheet.create({
   container: { flexDirection: 'column' },
+  row: { flexDirection: 'row' },
 });

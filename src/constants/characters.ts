@@ -525,10 +525,10 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
 };
 
 export const STATE_TO_TEMPLATE: Record<PetState, StateTemplate> = {
-  thriving: { tmpl: 'normal',  interval: 600 },
-  happy:    { tmpl: 'normal',  interval: 800 },
-  neutral:  { tmpl: 'normal',  interval: 1200 },
-  anxious:  { tmpl: 'worried', interval: 200 },
-  sick:     { tmpl: 'sick',    interval: 1200 },
-  dead:     { tmpl: 'dead',    interval: 1400 },
+  thriving: { tmpl: 'normal', interval: 600 },
+  happy: { tmpl: 'normal', interval: 800 },
+  neutral: { tmpl: 'normal', interval: 1200 },
+  anxious: { tmpl: 'worried', interval: 200 },
+  sick: { tmpl: 'sick', interval: 1200 },
+  dead: { tmpl: 'dead', interval: 1400 },
 };

@@ -13,7 +13,15 @@ interface Props {
 
 const SEGS = 24;
 
-export function HPHeader({ hp, deadHours, characterName, state, streak, canChoose, onOpenChooser }: Props) {
+export function HPHeader({
+  hp,
+  deadHours,
+  characterName,
+  state,
+  streak,
+  canChoose,
+  onOpenChooser,
+}: Props) {
   const isDead = deadHours >= 48;
   const filled = Math.round((hp / 100) * SEGS);
   const barColor = hp >= 70 ? '#3B7A2C' : hp >= 45 ? '#7E7414' : hp >= 25 ? '#A85618' : '#B83524';
@@ -23,7 +31,9 @@ export function HPHeader({ hp, deadHours, characterName, state, streak, canChoos
       <View style={styles.topRow}>
         <View style={styles.nameRow}>
           <Text style={styles.name}>{characterName.toUpperCase()}</Text>
-          <Text style={styles.meta}>· {state} · day {streak}</Text>
+          <Text style={styles.meta}>
+            · {state} · day {streak}
+          </Text>
         </View>
         <Pressable onPress={onOpenChooser} disabled={!canChoose} style={styles.chooserBtn}>
           <Text style={[styles.chooserText, !canChoose && styles.chooserDisabled]}>
@@ -37,7 +47,10 @@ export function HPHeader({ hp, deadHours, characterName, state, streak, canChoos
           {Array.from({ length: SEGS }, (_, i) => (
             <View
               key={i}
-              style={[styles.seg, { backgroundColor: i < filled ? barColor : 'rgba(60,60,67,0.10)' }]}
+              style={[
+                styles.seg,
+                { backgroundColor: i < filled ? barColor : 'rgba(60,60,67,0.10)' },
+              ]}
             />
           ))}
         </View>
@@ -53,12 +66,24 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, flex: 1 },
   name: { fontSize: 16, fontWeight: '800', color: '#1a1a1a', fontFamily: 'monospace' },
   meta: { fontSize: 10, color: 'rgba(60,60,67,0.55)', fontFamily: 'monospace', fontWeight: '700' },
-  chooserBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: '#1a1a1a' },
+  chooserBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#1a1a1a',
+  },
   chooserText: { fontSize: 10, fontWeight: '800', color: '#fff', fontFamily: 'monospace' },
   chooserDisabled: { color: 'rgba(60,60,67,0.4)' },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   hpLabel: { fontSize: 11, fontWeight: '800', color: '#1a1a1a', fontFamily: 'monospace' },
   segments: { flexDirection: 'row', flex: 1, gap: 1.5 },
   seg: { flex: 1, height: 11 },
-  hpVal: { fontSize: 11, fontWeight: '800', color: '#1a1a1a', fontFamily: 'monospace', minWidth: 38, textAlign: 'right' },
+  hpVal: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    fontFamily: 'monospace',
+    minWidth: 38,
+    textAlign: 'right',
+  },
 });

@@ -10,7 +10,8 @@ interface Props {
 }
 
 export function TaskList({ tasks, onToggle }: Props) {
-  const overdue = tasks.filter(t => t.overdue && !t.completed);
+  const overdue = tasks.filter(t => t.overdue);
+  const incompleteOverdue = overdue.filter(t => !t.completed);
   const today = tasks.filter(t => !t.overdue);
   const completedCount = today.filter(t => t.completed).length;
 
@@ -19,17 +20,25 @@ export function TaskList({ tasks, onToggle }: Props) {
       {overdue.length > 0 && (
         <>
           <View style={styles.sectionHeader}>
-            <SectionLabel color="#D85A30">⚠ Overdue · {overdue.length}</SectionLabel>
-            <Text style={styles.penalty}>−{overdue.reduce((s, t) => s + (t.overduePoints ?? 0), 0)} health</Text>
+            <SectionLabel color="#D85A30">⚠ Overdue · {incompleteOverdue.length}</SectionLabel>
+            <Text style={styles.penalty}>
+              −{incompleteOverdue.reduce((s, t) => s + (t.overduePoints ?? 0), 0)} health
+            </Text>
           </View>
-          {overdue.map(t => <TaskRow key={t.id} task={t} onToggle={onToggle} />)}
+          {overdue.map(t => (
+            <TaskRow key={t.id} task={t} onToggle={onToggle} />
+          ))}
         </>
       )}
       <View style={[styles.sectionHeader, overdue.length > 0 && styles.sectionSpacing]}>
         <SectionLabel>Today</SectionLabel>
-        <Text style={styles.count}>{completedCount}/{today.length}</Text>
+        <Text style={styles.count}>
+          {completedCount}/{today.length}
+        </Text>
       </View>
-      {today.map(t => <TaskRow key={t.id} task={t} onToggle={onToggle} />)}
+      {today.map(t => (
+        <TaskRow key={t.id} task={t} onToggle={onToggle} />
+      ))}
     </View>
   );
 }
