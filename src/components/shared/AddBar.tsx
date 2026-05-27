@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, Keyboard, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 interface Props {
@@ -13,6 +13,20 @@ interface Props {
 export function AddBar({ onAdd, onAddRecurring, recurringDayLabel, keyboard, setKeyboard }: Props) {
   const [value, setValue] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, e =>
+      setKeyboardOffset(e.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardOffset(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   const submit = () => {
     if (!value.trim()) return;
@@ -33,7 +47,8 @@ export function AddBar({ onAdd, onAddRecurring, recurringDayLabel, keyboard, set
       : 'one-off · today';
 
     return (
-      <View style={styles.inputRow}>
+      // eslint-disable-next-line react-native/no-inline-styles
+      <View style={[styles.inputRow, { bottom: 50 + keyboardOffset }]}>
         <View style={styles.dotCol}>
           <View style={[styles.dot, { backgroundColor: dotColor }]} />
           <Text style={[styles.modeLabel, { color: dotColor }]}>{modeLabel}</Text>
@@ -86,7 +101,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 50,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
