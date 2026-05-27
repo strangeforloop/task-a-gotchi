@@ -188,15 +188,11 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
   const addTask = useCallback(
     (title: string) => {
       if (!title.trim()) return;
-      const id = 'oo-' + Date.now().toString(36);
       mutate(s => ({
         ...s,
-        oneoffs: {
-          ...s.oneoffs,
-          [todayId]: [
-            ...(s.oneoffs[todayId] ?? []),
-            { id, title: title.trim(), createdAt: Date.now() },
-          ],
+        templates: {
+          ...s.templates,
+          [todayId]: [...(s.templates[todayId] ?? []), title.trim()],
         },
       }));
     },
