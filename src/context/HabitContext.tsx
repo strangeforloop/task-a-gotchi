@@ -47,7 +47,16 @@ const HabitContext = createContext<HabitContextValue | null>(null);
 
 export function HabitProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = useState<HabitStore>(buildInitialStore);
-  const [now] = useState(() => new Date());
+  const [now, setNow] = useState(() => new Date());
+
+  // Re-arm at each midnight so todayId / habitLatePenalty stay current without a restart
+  useEffect(() => {
+    const n = new Date();
+    const tomorrow = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
+    const ms = tomorrow.getTime() - n.getTime();
+    const timer = setTimeout(() => setNow(new Date()), ms);
+    return () => clearTimeout(timer);
+  }, [now]);
 
   // Load persisted data on mount
   useEffect(() => {

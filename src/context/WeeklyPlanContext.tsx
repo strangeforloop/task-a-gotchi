@@ -70,7 +70,16 @@ function persist(store: WeeklyPlanStore) {
 
 export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = useState<WeeklyPlanStore>(buildInitialStore);
-  const [now] = useState(() => new Date());
+  const [now, setNow] = useState(() => new Date());
+
+  // Re-arm at each midnight so todayId / weekStart stay current without a restart
+  useEffect(() => {
+    const n = new Date();
+    const tomorrow = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
+    const ms = tomorrow.getTime() - n.getTime();
+    const timer = setTimeout(() => setNow(new Date()), ms);
+    return () => clearTimeout(timer);
+  }, [now]);
 
   // Load from AsyncStorage on mount; reset if week has rolled over
   useEffect(() => {

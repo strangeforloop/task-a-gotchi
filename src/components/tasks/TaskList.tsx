@@ -10,14 +10,16 @@ interface Props {
 }
 
 export function TaskList({ tasks, onToggle }: Props) {
-  const overdue = tasks.filter(t => t.overdue);
-  const incompleteOverdue = overdue.filter(t => !t.completed);
-  const today = tasks.filter(t => !t.overdue);
-  const completedCount = today.filter(t => t.completed).length;
+  const incompleteOverdue = tasks.filter(t => t.overdue && !t.completed);
+  const incompleteToday = tasks.filter(t => !t.overdue && !t.completed);
+  const done = tasks.filter(t => t.completed);
+
+  const completedTodayCount = done.filter(t => !t.overdue).length;
+  const totalToday = incompleteToday.length + completedTodayCount;
 
   return (
     <View style={styles.list}>
-      {overdue.length > 0 && (
+      {incompleteOverdue.length > 0 && (
         <>
           <View style={styles.sectionHeader}>
             <SectionLabel color="#D85A30">⚠ Overdue · {incompleteOverdue.length}</SectionLabel>
@@ -25,20 +27,32 @@ export function TaskList({ tasks, onToggle }: Props) {
               −{incompleteOverdue.reduce((s, t) => s + (t.overduePoints ?? 0), 0)} health
             </Text>
           </View>
-          {overdue.map(t => (
+          {incompleteOverdue.map(t => (
             <TaskRow key={t.id} task={t} onToggle={onToggle} />
           ))}
         </>
       )}
-      <View style={[styles.sectionHeader, overdue.length > 0 && styles.sectionSpacing]}>
+
+      <View style={[styles.sectionHeader, incompleteOverdue.length > 0 && styles.sectionSpacing]}>
         <SectionLabel>Today</SectionLabel>
         <Text style={styles.count}>
-          {completedCount}/{today.length}
+          {completedTodayCount}/{totalToday}
         </Text>
       </View>
-      {today.map(t => (
+      {incompleteToday.map(t => (
         <TaskRow key={t.id} task={t} onToggle={onToggle} />
       ))}
+
+      {done.length > 0 && (
+        <>
+          <View style={[styles.sectionHeader, styles.sectionSpacing]}>
+            <SectionLabel color="rgba(60,60,67,0.4)">Done · {done.length}</SectionLabel>
+          </View>
+          {done.map(t => (
+            <TaskRow key={t.id} task={t} onToggle={onToggle} />
+          ))}
+        </>
+      )}
     </View>
   );
 }
