@@ -60,10 +60,10 @@ export function computeHabitLateLabel(hhmm: string, now: Date): string | undefin
 
 /**
  * HP penalty for a habit that is past its scheduled time but not yet
- * completed today. Mirrors the late-label tiers:
+ * completed today. Softer than the overdue scale (habit still completable today):
  *   < 10 min → 0 (grace period)
- *   10–59 min → −3 HP  (matches "Xm late" label)
- *   60 min+   → −5 HP  (matches "Xh late" label)
+ *   10–59 min → −5 HP  (matches "Xm late" label)
+ *   60 min+   → −10 HP (matches "Xh late" label)
  */
 export function computeHabitLatePoints(hhmm: string, now: Date): number {
   const [hStr, mStr] = hhmm.split(':');
@@ -71,8 +71,8 @@ export function computeHabitLatePoints(hhmm: string, now: Date): number {
   scheduled.setHours(parseInt(hStr, 10), parseInt(mStr, 10), 0, 0);
   const lateMins = Math.floor((now.getTime() - scheduled.getTime()) / 60_000);
   if (lateMins < 10) return 0;
-  if (lateMins < 60) return 3;
-  return 5;
+  if (lateMins < 60) return 5;
+  return 10;
 }
 
 /**

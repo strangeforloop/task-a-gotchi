@@ -84,11 +84,11 @@ export function buildHabitDots(
 
 // ─── Overdue habit helpers ────────────────────────────────────────────────────
 
-/** Lighter penalty scale for habits — capped at 10 to avoid overwhelming stacks. */
+/** Penalty scale for overdue habits. Lighter than regular tasks (max 30) but meaningful. */
 export function habitPointsForHours(hours: number): number {
   if (hours < 6) return 0;
-  if (hours < 12) return 5;
-  return 10;
+  if (hours < 12) return 15;
+  return 25;
 }
 
 /** Converts a JS Date to a DayId (getDay: 0=Sun … 6=Sat → mon…sun). */
