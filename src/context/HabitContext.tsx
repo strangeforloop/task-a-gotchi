@@ -99,8 +99,9 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
           habitDots: buildHabitDots(h.id, store.completions, weekStart),
           habitCreatedAt: h.createdAt,
           habitScheduledTime: h.scheduledTime,
-          habitLateLabel:
-            h.scheduledTime && !done ? computeHabitLateLabel(h.scheduledTime, now) : undefined,
+          habitLateLabel: !done
+            ? computeHabitLateLabel(h.scheduledTime ?? '08:00', now)
+            : undefined,
         };
       });
   }, [store, todayId, todayIso, weekStart, now]);
@@ -119,10 +120,9 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
     const completedToday = new Set(store.completions[todayIso] ?? []);
     let penalty = 0;
     for (const h of store.habits) {
-      if (!h.scheduledTime) continue;
       if (!isHabitScheduledToday(h, todayId)) continue;
       if (completedToday.has(h.id)) continue;
-      penalty += computeHabitLatePoints(h.scheduledTime, now);
+      penalty += computeHabitLatePoints(h.scheduledTime ?? '08:00', now);
     }
     return penalty;
   }, [store, todayId, todayIso, now]);
