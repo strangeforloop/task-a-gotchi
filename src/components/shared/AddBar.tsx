@@ -1,32 +1,49 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface Props {
   onAdd: (title: string) => void;
+  onAddRecurring?: (title: string) => void;
+  recurringDayLabel?: string;
   keyboard: boolean;
   setKeyboard: (open: boolean) => void;
 }
 
-export function AddBar({ onAdd, keyboard, setKeyboard }: Props) {
+export function AddBar({ onAdd, onAddRecurring, recurringDayLabel, keyboard, setKeyboard }: Props) {
   const [value, setValue] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
 
   const submit = () => {
     if (!value.trim()) return;
-    onAdd(value.trim());
+    if (isRecurring && onAddRecurring) {
+      onAddRecurring(value.trim());
+    } else {
+      onAdd(value.trim());
+    }
     setValue('');
+    setIsRecurring(false);
     setKeyboard(false);
   };
 
   if (keyboard) {
+    const dotColor = isRecurring ? '#7F77DD' : '#1D9E75';
+    const modeLabel = isRecurring
+      ? recurringDayLabel ? `recurring · ${recurringDayLabel}` : 'recurring'
+      : 'one-off · today';
+
     return (
       <View style={styles.inputRow}>
-        <View style={styles.dot} />
+        <View style={styles.dotCol}>
+          <View style={[styles.dot, { backgroundColor: dotColor }]} />
+          <Text style={[styles.modeLabel, { color: dotColor }]}>{modeLabel}</Text>
+        </View>
         <TextInput
           autoFocus
           value={value}
           onChangeText={setValue}
           onSubmitEditing={submit}
-          placeholder="Add a task to today…"
+          placeholder={isRecurring ? 'Add a recurring task…' : 'Add a task to today…'}
           style={styles.input}
           returnKeyType="done"
         />
@@ -38,7 +55,15 @@ export function AddBar({ onAdd, keyboard, setKeyboard }: Props) {
   }
 
   return (
-    <Pressable onPress={() => setKeyboard(true)} style={styles.fab}>
+    <Pressable
+      onPress={() => { setIsRecurring(false); setKeyboard(true); }}
+      onLongPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        setIsRecurring(true);
+        setKeyboard(true);
+      }}
+      style={styles.fab}
+    >
       <Text style={styles.fabIcon}>+</Text>
     </Pressable>
   );
@@ -71,7 +96,9 @@ const styles = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 8,
   },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#1D9E75' },
+  dotCol: { alignItems: 'center', gap: 2 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  modeLabel: { fontSize: 9, fontWeight: '600', letterSpacing: 0.2 },
   input: { flex: 1, fontSize: 16, padding: 6 },
   addBtn: {
     paddingHorizontal: 14,

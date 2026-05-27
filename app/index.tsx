@@ -34,7 +34,7 @@ const COLORWAY_IDS = ['butter', 'mint', 'coral', 'sky', 'ube'] as const;
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { tasks, toggleTask, addTask, streak } = useWeeklyPlan();
+  const { tasks, toggleTask, addTask, addTemplate, todayId, streak } = useWeeklyPlan();
   const { habitTasks, overdueHabitTasks, habitBonus, habitLatePenalty, toggleHabit } = useHabits();
   const { character, colorway, setColorway } = useProfile();
 
@@ -76,6 +76,12 @@ export default function HomeScreen() {
   const [toast, setToast] = useState({ visible: false, message: '' });
 
   // Energy is based on weekly plan tasks only (not habits), to keep it meaningful
+  const DAY_LONGS: Record<string, string> = {
+    mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday',
+    thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
+  };
+  const recurringDayLabel = `every ${DAY_LONGS[todayId] ?? todayId}`;
+
   const todayTasks = tasks.filter(t => !t.overdue);
   const energy =
     todayTasks.length === 0
@@ -169,7 +175,13 @@ export default function HomeScreen() {
           <Text style={styles.calBtnTxt}>👤</Text>
         </Pressable>
 
-        <AddBar onAdd={addTask} keyboard={keyboard} setKeyboard={setKeyboard} />
+        <AddBar
+          onAdd={addTask}
+          onAddRecurring={title => addTemplate(todayId, title)}
+          recurringDayLabel={recurringDayLabel}
+          keyboard={keyboard}
+          setKeyboard={setKeyboard}
+        />
       </View>
     </SafeAreaView>
   );
