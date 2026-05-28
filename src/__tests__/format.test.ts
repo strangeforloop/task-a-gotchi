@@ -1,4 +1,9 @@
-import { formatAdded, formatOverdueDuration } from '../utils/format';
+import {
+  formatAdded,
+  formatOverdueDuration,
+  computeHabitLatePoints,
+  formatTaskTime,
+} from '../utils/format';
 
 // Fixed "now" reference: 2026-05-27T10:00:00 (Wednesday 10am)
 const NOW = new Date('2026-05-27T10:00:00').getTime();
@@ -30,6 +35,68 @@ describe('formatAdded', () => {
 
   it('returns "Xd ago" for multiple days', () => {
     expect(formatAdded(NOW - 3 * 24 * 3_600_000, NOW)).toBe('3d ago');
+  });
+});
+
+describe('computeHabitLatePoints', () => {
+  // scheduled at 10:00 — all "now" values are on the same day
+  const HHMM = '10:00';
+
+  it('returns 0 within the 10-minute grace period', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T10:05:00'))).toBe(0);
+  });
+
+  it('returns 0 at 9 minutes late (just inside grace)', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T10:09:59'))).toBe(0);
+  });
+
+  it('returns 5 at exactly 10 minutes late', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T10:10:00'))).toBe(5);
+  });
+
+  it('returns 5 at 30 minutes late', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T10:30:00'))).toBe(5);
+  });
+
+  it('returns 5 at 59 minutes late', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T10:59:00'))).toBe(5);
+  });
+
+  it('returns 10 at exactly 60 minutes late', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T11:00:00'))).toBe(10);
+  });
+
+  it('returns 10 when several hours late', () => {
+    expect(computeHabitLatePoints(HHMM, new Date('2026-05-28T15:00:00'))).toBe(10);
+  });
+});
+
+describe('formatTaskTime', () => {
+  it('returns the formatted scheduled time for a habit with scheduledTime', () => {
+    expect(formatTaskTime('habit', undefined, '07:30')).toBe('7:30 AM');
+  });
+
+  it('returns 8:00 AM for a habit without scheduledTime', () => {
+    expect(formatTaskTime('habit', undefined, undefined)).toBe('8:00 AM');
+  });
+
+  it('returns 8:00 AM for a template task', () => {
+    expect(formatTaskTime('template', undefined, undefined)).toBe('8:00 AM');
+  });
+
+  it('extracts wall-clock time from createdAt for a one-off task', () => {
+    const ts = new Date('2026-05-28T14:30:00').getTime();
+    expect(formatTaskTime('one-off', ts, undefined)).toBe('2:30 PM');
+  });
+
+  it('returns 8:00 AM as fallback for one-off with no createdAt', () => {
+    expect(formatTaskTime('one-off', undefined, undefined)).toBe('8:00 AM');
+  });
+
+  it('prefers scheduledTime over createdAt', () => {
+    const ts = new Date('2026-05-28T14:30:00').getTime();
+    // formatScheduledTime drops :00 minutes → '8 AM' not '8:00 AM'
+    expect(formatTaskTime('habit', ts, '08:00')).toBe('8 AM');
   });
 });
 
