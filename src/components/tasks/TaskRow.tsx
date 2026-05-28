@@ -5,7 +5,6 @@ import { CheckCircle } from './CheckCircle';
 import { HabitDots } from './HabitDots';
 import {
   formatTaskTime,
-  formatHabitSince,
   formatOverdueDuration,
 } from '../../utils/format';
 
@@ -40,15 +39,9 @@ export function TaskRow({ task, onToggle }: Props) {
             {overdueDuration ? <Text style={styles.overdueDuration}>{overdueDuration}</Text> : null}
           </View>
         )}
-        {task.source === 'habit' && (task.habitCreatedAt || task.habitLateLabel) && (
+        {task.source === 'habit' && task.habitLateLabel && (
           <View style={styles.habitMetaRow}>
-            {task.habitCreatedAt && (
-              <Text style={styles.habitSince}>{formatHabitSince(task.habitCreatedAt)}</Text>
-            )}
-            {task.habitCreatedAt && task.habitLateLabel && (
-              <Text style={styles.habitMetaSep}> · </Text>
-            )}
-            {task.habitLateLabel && <Text style={styles.habitLate}>{task.habitLateLabel}</Text>}
+            <Text style={styles.habitLate}>{task.habitLateLabel}</Text>
           </View>
         )}
         {task.source === 'habit' && task.habitDots && <HabitDots dots={task.habitDots} />}
@@ -82,9 +75,7 @@ const styles = StyleSheet.create({
   overdueFrom: { fontSize: 11, fontWeight: '600', color: '#D85A30' },
   overdueDuration: { fontSize: 11, fontWeight: '400', color: 'rgba(216,90,48,0.55)' },
   timeBadge: { fontSize: 11, fontWeight: '600', marginLeft: 4 },
-  habitMetaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2, marginLeft: 14 },
-  habitSince: { fontSize: 11, color: 'rgba(60,60,67,0.38)' },
-  habitMetaSep: { fontSize: 11, color: 'rgba(60,60,67,0.25)' },
+  habitMetaRow: { marginTop: 2, marginLeft: 14 },
   habitLate: { fontSize: 11, fontWeight: '600', color: '#E8955A' },
   badge: {
     paddingHorizontal: 8,
