@@ -28,7 +28,7 @@ export const GLYPHS: Record<GlyphName, string[]> = {
 };
 
 export const BUTTON_DEFINITIONS: ButtonDef[] = [
-  { id: 'a', label: 'A', sub: 'pet', color: '#F4A9B8', dark: '#C16678', glyph: 'heart' },
+  { id: 'a', label: 'A', sub: 'pet', color: '#F4A9B8', dark: '#C16678' },
   { id: 'b', label: 'B', sub: 'feed', color: '#86CFC0', dark: '#4D9F8E' },
   { id: 'c', label: 'C', sub: 'talk', color: '#B6A8E6', dark: '#7D6FB8' },
 ];
