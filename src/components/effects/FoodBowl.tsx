@@ -2,15 +2,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 
 // 9×9 pixel cookie — '#' = ink, '.' = transparent
+// Three 2×2 chocolate chips placed asymmetrically:
+//   chip 1 upper-left (rows 2–3, cols 2–3)
+//   chip 2 middle-right (rows 4–5, cols 6–7)
+//   chip 3 lower-centre (rows 6–7, cols 4–5)
 const COOKIE_ROWS = [
   '..#####..',
   '.#######.',
-  '###.#.###',
-  '#########',
-  '##.###.##',
-  '#########',
-  '###.#.###',
-  '.#######.',
+  '##..#####',
+  '##..#####',
+  '######..#',
+  '######..#',
+  '####..###',
+  '.###..##.',
   '..#####..',
 ];
 

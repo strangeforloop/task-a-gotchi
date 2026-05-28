@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
+import { PixelGlyph } from '../device/PixelGlyph';
+import { LCD_INK } from '../../constants/colors';
 
 const HEARTS = [
   { x: 18, delay: 0 },
@@ -27,9 +29,9 @@ function FloatingHeart({ x, delay }: { x: number; delay: number }) {
   }, [delay, translateY, opacity]);
 
   return (
-    <Animated.Text style={[styles.heart, { left: x, transform: [{ translateY }], opacity }]}>
-      ♥
-    </Animated.Text>
+    <Animated.View style={[styles.heart, { left: x, transform: [{ translateY }], opacity }]}>
+      <PixelGlyph name="heart" color={LCD_INK} scale={3} />
+    </Animated.View>
   );
 }
 
@@ -59,5 +61,5 @@ export function HeartsBurst({ visible }: Props) {
 
 const styles = StyleSheet.create({
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 },
-  heart: { position: 'absolute', bottom: 30, fontSize: 16, color: '#1F2410' },
+  heart: { position: 'absolute', bottom: 30 },
 });
