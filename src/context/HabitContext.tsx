@@ -49,14 +49,12 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = useState<HabitStore>(buildInitialStore);
   const [now, setNow] = useState(() => new Date());
 
-  // Re-arm at each midnight so todayId / habitLatePenalty stay current without a restart
+  // Tick every 60s so habitLateLabel / habitLatePenalty stay accurate during the day.
+  // This also handles midnight rollover (todayId / todayIso) within 60s.
   useEffect(() => {
-    const n = new Date();
-    const tomorrow = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
-    const ms = tomorrow.getTime() - n.getTime();
-    const timer = setTimeout(() => setNow(new Date()), ms);
-    return () => clearTimeout(timer);
-  }, [now]);
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Load persisted data on mount
   useEffect(() => {
