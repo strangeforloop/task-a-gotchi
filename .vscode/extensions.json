@@ -1,0 +1,14 @@
+{
+  "// note": "VS Code prompts to install these when you open the repo (Extensions: Show Recommended Extensions).",
+  "// already-installed": "lirobi.phone-preview and elyannsoto.mobile-live-preview are ALREADY installed on this machine. phone-preview frames the web target (expo start --web) as a phone with live reload — closest to the 'browser live phone' workflow. Both preview the WEB target only, not native iOS/Android rendering.",
+  "recommendations": [
+    "lirobi.phone-preview",
+    "expo.vscode-expo-tools",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "Gruntfuggly.todo-tree"
+  ],
+  "// todo-tree-note": "Gruntfuggly.todo-tree is only lightly maintained (last real releases ~2023). The maintained fork 'Better Todo Tree' is an alternative if you hit issues."
+}

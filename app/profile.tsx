@@ -4,8 +4,9 @@ import { useRouter } from 'expo-router';
 
 import { useProfile } from '../src/context/ProfileContext';
 import { useWeeklyPlan } from '../src/context/WeeklyPlanContext';
-import { useHealth } from '../src/hooks/useHealth';
+import { usePetHp } from '../src/hooks/usePetHp';
 import { usePetState } from '../src/hooks/usePetState';
+import { usePetMood } from '../src/hooks/usePetMood';
 
 import { PetSprite } from '../src/components/pet/PetSprite';
 import { CHARACTERS } from '../src/constants/characters';
@@ -14,8 +15,10 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { character } = useProfile();
   const { tasks, streak } = useWeeklyPlan();
-  const hp = useHealth(tasks);
-  const { state, meta, barColor } = usePetState(hp);
+  // Same HP source as Home so the two screens can never disagree.
+  const { hp, deadHours } = usePetHp();
+  const { state, meta, barColor } = usePetState(hp, deadHours);
+  const { mood } = usePetMood();
 
   const todayTasks = tasks.filter(t => !t.overdue);
   const doneTodayCount = todayTasks.filter(t => t.completed).length;
@@ -51,6 +54,15 @@ export default function ProfileScreen() {
               />
             </View>
             <Text style={styles.statValue}>{hp}</Text>
+          </View>
+
+          <View style={styles.statRow}>
+            <Text style={styles.statIcon}>💗</Text>
+            <Text style={styles.statLabel}>Mood</Text>
+            <View style={styles.statBarTrack}>
+              <View style={[styles.statBarFill, { width: `${mood}%` as `${number}%`, backgroundColor: '#E8689B' }]} />
+            </View>
+            <Text style={styles.statValue}>{mood}</Text>
           </View>
 
           <View style={styles.statRow}>

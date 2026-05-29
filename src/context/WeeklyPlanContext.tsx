@@ -1,49 +1,40 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Day, DayId, DayCompletions, Task, WeeklyPlanStore, WeeklyTaskEntry } from '../types';
-import { WEEKLY_TEMPLATE, WEEKLY_ONEOFFS } from '../constants/data';
+import type { Day, DayId, Task, WeeklyPlanStore, WeeklyTaskEntry } from '../types';
 import {
   computeWeekDays,
+  dayIsoFromWeekStart,
   deriveTasksForToday,
   getIsoDate,
   getTodayDayId,
   getWeekStart,
-  seedOneoffs,
 } from '../utils/weeklyPlan';
 import { computeStreak } from '../utils/streak';
+import { writeStore } from '../utils/storage';
+import { uid } from '../utils/id';
 
 const STORAGE_KEY = 'task-a-gotchi:weekly-v2';
 
 const DAY_IDS: DayId[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
+const emptyDayMap = (): Record<DayId, never[]> => ({
+  mon: [],
+  tue: [],
+  wed: [],
+  thu: [],
+  fri: [],
+  sat: [],
+  sun: [],
+});
+
 function buildInitialStore(): WeeklyPlanStore {
-  const weekStart = getWeekStart();
-  const now = new Date();
-  const todayIndex = DAY_IDS.indexOf(getTodayDayId(now));
-
-  // Pre-complete all past days except yesterday, so the app opens with a handful
-  // of overdue tasks rather than a completely clean slate.
-  const oneoffs = seedOneoffs(WEEKLY_ONEOFFS as Record<string, string[]>);
-  const completions: Record<string, DayCompletions> = {};
-
-  for (let i = 0; i < todayIndex - 1; i++) {
-    const dayId = DAY_IDS[i];
-    const monday = new Date(weekStart + 'T00:00:00');
-    monday.setDate(monday.getDate() + i);
-    const iso = monday.toISOString().split('T')[0];
-    const dayOneoffIds = (oneoffs[dayId] ?? []).map(e => e.id);
-    completions[iso] = {
-      templateTitles: [...(WEEKLY_TEMPLATE[dayId] ?? [])],
-      oneoffIds: dayOneoffIds,
-    };
-  }
-  // Yesterday and today intentionally left out → yesterday's tasks become overdue
-
+  // Start empty — no demo data. New users begin at 100 HP and either pick habits
+  // during onboarding (see app/onboarding.tsx) or add their own tasks.
   return {
-    weekStart,
-    templates: { ...WEEKLY_TEMPLATE },
-    oneoffs,
-    completions,
+    weekStart: getWeekStart(),
+    templates: emptyDayMap(),
+    oneoffs: emptyDayMap(),
+    completions: {},
   };
 }
 
@@ -65,7 +56,7 @@ interface WeeklyPlanContextValue {
 const WeeklyPlanContext = createContext<WeeklyPlanContextValue | null>(null);
 
 function persist(store: WeeklyPlanStore) {
-  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(store)).catch(() => {});
+  writeStore(STORAGE_KEY, store);
 }
 
 export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) {
@@ -141,8 +132,8 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
             ? day.oneoffIds.filter(i => i !== oneoffId)
             : [...day.oneoffIds, oneoffId];
         }
-        // Overdue tasks: toggling removes them from their original day's completions
-        // For simplicity, overdue tasks can't be toggled back to incomplete once checked
+        // Overdue tasks: toggling flips completion on the task's ORIGINAL day
+        // (so it disappears from / reappears in the overdue list). Reversible both ways.
         else if (id.startsWith('overdue-tmpl-')) {
           // id = overdue-tmpl-{dayId}-{title}
           const rest = id.slice('overdue-tmpl-'.length);
@@ -150,7 +141,7 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
           const title = titleParts.join('-');
           const dayIndex = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].indexOf(dayId);
           if (dayIndex >= 0) {
-            const dayIso = dayIsoFromStore(s.weekStart, dayIndex);
+            const dayIso = dayIsoFromWeekStart(s.weekStart, dayIndex);
             const existing = s.completions[dayIso] ?? { templateTitles: [], oneoffIds: [] };
             completions[dayIso] = {
               ...existing,
@@ -165,7 +156,7 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
           for (let i = 0; i < 7; i++) {
             const dayId = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'][i] as DayId;
             if ((s.oneoffs[dayId] ?? []).some(e => e.id === oneoffId)) {
-              const dayIso = dayIsoFromStore(s.weekStart, i);
+              const dayIso = dayIsoFromWeekStart(s.weekStart, i);
               const existing = s.completions[dayIso] ?? { templateTitles: [], oneoffIds: [] };
               completions[dayIso] = {
                 ...existing,
@@ -188,7 +179,7 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
   const addTask = useCallback(
     (title: string) => {
       if (!title.trim()) return;
-      const id = 'oo-' + Date.now().toString(36);
+      const id = uid('oo');
       mutate(s => ({
         ...s,
         oneoffs: {
@@ -239,7 +230,7 @@ export function WeeklyPlanProvider({ children }: { children: React.ReactNode }) 
   const addOneoff = useCallback(
     (dayId: DayId, title: string) => {
       if (!title.trim()) return;
-      const id = 'oo-' + Date.now().toString(36);
+      const id = uid('oo');
       mutate(s => ({
         ...s,
         oneoffs: {
@@ -289,11 +280,4 @@ export function useWeeklyPlan(): WeeklyPlanContextValue {
   const ctx = useContext(WeeklyPlanContext);
   if (!ctx) throw new Error('useWeeklyPlan must be used inside WeeklyPlanProvider');
   return ctx;
-}
-
-// Helper used internally — mirrors dayIsoFromWeekStart without importing to avoid circular
-function dayIsoFromStore(weekStart: string, dayIndex: number): string {
-  const monday = new Date(weekStart + 'T00:00:00');
-  monday.setDate(monday.getDate() + dayIndex);
-  return monday.toISOString().split('T')[0];
 }

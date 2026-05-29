@@ -9,6 +9,8 @@ import {
 } from '../utils/habits';
 import { computeHabitLateLabel, computeHabitLatePoints } from '../utils/format';
 import { getIsoDate, getTodayDayId, getWeekStart } from '../utils/weeklyPlan';
+import { writeStore } from '../utils/storage';
+import { uid } from '../utils/id';
 
 const STORAGE_KEY = 'task-a-gotchi:habits-v1';
 
@@ -17,7 +19,7 @@ function buildInitialStore(): HabitStore {
 }
 
 function persist(store: HabitStore) {
-  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(store)).catch(() => {});
+  writeStore(STORAGE_KEY, store);
 }
 
 interface HabitContextValue {
@@ -62,7 +64,18 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
       if (!raw) return;
       try {
         const saved: HabitStore = JSON.parse(raw);
-        setStore(saved);
+        // Defensive: drop any habits sharing an id (legacy data from the old
+        // Date.now() id generator could collide). Re-persist if we cleaned any.
+        const seen = new Set<string>();
+        const deduped = saved.habits.filter(h => {
+          if (seen.has(h.id)) return false;
+          seen.add(h.id);
+          return true;
+        });
+        const next =
+          deduped.length === saved.habits.length ? saved : { ...saved, habits: deduped };
+        if (next !== saved) persist(next);
+        setStore(next);
       } catch {
         // corrupt — use empty store
       }
@@ -141,7 +154,7 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
   const addHabit = useCallback(
     (title: string, frequency: HabitFrequency, daysOfWeek?: DayId[], scheduledTime?: string) => {
       if (!title.trim()) return;
-      const id = 'h-' + Date.now().toString(36);
+      const id = uid('h');
       const habit: Habit = {
         id,
         title: title.trim(),

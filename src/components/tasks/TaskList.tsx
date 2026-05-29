@@ -17,6 +17,15 @@ export function TaskList({ tasks, onToggle }: Props) {
   const completedTodayCount = done.filter(t => !t.overdue).length;
   const totalToday = incompleteToday.length + completedTodayCount;
 
+  if (tasks.length === 0) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>No tasks yet 🐾</Text>
+        <Text style={styles.emptyBody}>Add your first task to feed your pet.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.list}>
       {incompleteOverdue.length > 0 && (
@@ -59,6 +68,9 @@ export function TaskList({ tasks, onToggle }: Props) {
 
 const styles = StyleSheet.create({
   list: { gap: 10, paddingHorizontal: 16, paddingBottom: 100 },
+  empty: { paddingHorizontal: 16, paddingTop: 32, alignItems: 'center', gap: 6 },
+  emptyTitle: { fontSize: 15, fontWeight: '800', color: '#1a1a1a', fontFamily: 'monospace' },
+  emptyBody: { fontSize: 13, color: 'rgba(60,60,67,0.6)', textAlign: 'center' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   sectionSpacing: { marginTop: 10 },
   penalty: { fontSize: 11, color: '#D85A30', fontWeight: '600' },

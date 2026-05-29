@@ -10,6 +10,7 @@ export default function RootLayout() {
         <ProfileProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
             <Stack.Screen name="weekly" options={{ presentation: 'modal' }} />
             <Stack.Screen name="character-chooser" options={{ presentation: 'transparentModal' }} />
             <Stack.Screen name="profile" options={{ presentation: 'modal' }} />

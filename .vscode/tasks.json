@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Expo: Web (live preview)",
+      "type": "shell",
+      "command": "npx expo start --web",
+      "detail": "Runs the web target on the Metro dev server (default http://localhost:8081) and opens your browser with Fast Refresh. The 'lirobi.phone-preview' extension auto-detects this server to frame it as a phone inside VS Code.",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Expo: Start (QR / Expo Go)",
+      "type": "shell",
+      "command": "npx expo start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Type-check (tsc --noEmit)",
+      "type": "shell",
+      "command": "npx tsc --noEmit",
+      "problemMatcher": ["$tsc"],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Test (watch)",
+      "type": "shell",
+      "command": "npx jest --watch",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": true }
+    }
+  ]
+}

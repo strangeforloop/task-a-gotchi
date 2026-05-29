@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, SafeAreaView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 import { useWeeklyPlan } from '../src/context/WeeklyPlanContext';
 import { useHabits } from '../src/context/HabitContext';
 import { useProfile } from '../src/context/ProfileContext';
-import { useHealth } from '../src/hooks/useHealth';
+import { usePetHp } from '../src/hooks/usePetHp';
+import { useDeadStateTracker } from '../src/hooks/useDeadStateTracker';
 import { usePetState } from '../src/hooks/usePetState';
 import { useEffectTimer } from '../src/hooks/useEffectTimer';
 
@@ -35,13 +36,13 @@ const COLORWAY_IDS = ['butter', 'mint', 'coral', 'sky', 'ube'] as const;
 export default function HomeScreen() {
   const router = useRouter();
   const { tasks, toggleTask, addTask, addTemplate, todayId, streak } = useWeeklyPlan();
-  const { habitTasks, overdueHabitTasks, habitBonus, habitLatePenalty, toggleHabit } = useHabits();
-  const { character, colorway, setColorway } = useProfile();
+  const { habitTasks, overdueHabitTasks, toggleHabit } = useHabits();
+  const { character, colorway, setColorway, onboarded, hydrated, recordInteraction } = useProfile();
 
-  // HP: overdue habit penalties feed into computeHealth via overduePoints
-  const allTasksForHp = useMemo(() => [...overdueHabitTasks, ...tasks], [overdueHabitTasks, tasks]);
-  const hp = useHealth(allTasksForHp, habitBonus, habitLatePenalty);
-  const { state, meta } = usePetState(hp);
+  // Single source of truth for HP + dead state, shared with the profile modal.
+  const { hp, deadHours } = usePetHp();
+  useDeadStateTracker(hp);
+  const { state, meta } = usePetState(hp, deadHours);
 
   // Display: overdue habits at top (red section), then today's habits, then weekly tasks
   const allTasks = useMemo(
@@ -93,28 +94,35 @@ export default function HomeScreen() {
 
   const onA = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    recordInteraction('pet');
     playEffect('purr', 1500);
   };
   const onB = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    recordInteraction('feed');
     playEffect('feed', 1700);
   };
   const onC = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    recordInteraction('talk');
     setToast({ visible: true, message: pickMessage() });
     setTimeout(() => setToast(t => ({ ...t, visible: false })), 5500);
   };
+
+  // Hold until the persisted profile loads, then send first-time users to onboarding.
+  if (!hydrated) return null;
+  if (!onboarded) return <Redirect href="/onboarding" />;
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.screen}>
         <HPHeader
           hp={hp}
-          deadHours={0}
+          deadHours={deadHours}
           characterName={character}
           state={meta.label}
           streak={streak}
-          canChoose
+          canChoose={hp === 100}
           onOpenChooser={() => router.push('/character-chooser')}
         />
 

@@ -111,4 +111,12 @@ export interface WeeklyPlanStore {
 export interface ProfileStore {
   character: CharacterId;
   colorway: ColorwayId;
+  /** Unix ms when HP first reached 0, or null when alive. Drives the dead state. */
+  hpZeroSince?: number | null;
+  /** True once the user has completed (or skipped) first-run onboarding. */
+  onboarded?: boolean;
+  /** Affinity 0–100 (the fun layer; not tied to survival). */
+  mood?: number;
+  /** Unix ms the mood was last changed — used to decay it over time. */
+  moodUpdatedAt?: number;
 }

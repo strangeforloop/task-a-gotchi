@@ -5,7 +5,16 @@ const DAY_SHORTS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_LONGS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export function getIsoDate(date: Date): string {
-  return date.toISOString().split('T')[0];
+  // Use the LOCAL calendar date, not toISOString() (which converts to UTC).
+  // The rest of the app derives the day-of-week and week start from local time
+  // (getDay/getDate), so a UTC key would disagree with them in the evening for
+  // timezones behind UTC — flipping the key a day and triggering a spurious
+  // week-rollover reset that wipes tasks. Local formatting keeps every date key
+  // consistent with todayId/weekStart.
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export function getWeekStart(now: Date = new Date()): string {
