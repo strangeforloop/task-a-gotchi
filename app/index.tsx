@@ -21,6 +21,7 @@ import { LCDStatBars } from '../src/components/device/LCDStatBars';
 import { DeviceButtons } from '../src/components/device/DeviceButtons';
 import { PetPlatform } from '../src/components/device/PetPlatform';
 import { PetSprite } from '../src/components/pet/PetSprite';
+import { RevivalChip } from '../src/components/device/RevivalChip';
 import { HeartsBurst } from '../src/components/effects/HeartsBurst';
 import { FoodBowl } from '../src/components/effects/FoodBowl';
 import { MessageToast } from '../src/components/effects/MessageToast';
@@ -29,6 +30,7 @@ import { AddBar } from '../src/components/shared/AddBar';
 
 import { DEVICE_PALETTES } from '../src/constants/colors';
 import { pickMessage } from '../src/utils/messages';
+import { REVIVE_GOAL } from '../src/utils/revive';
 import type { MenuId } from '../src/types';
 
 const COLORWAY_IDS = ['butter', 'mint', 'coral', 'sky', 'ube'] as const;
@@ -37,11 +39,20 @@ export default function HomeScreen() {
   const router = useRouter();
   const { tasks, toggleTask, addTask, addTemplate, todayId, streak } = useWeeklyPlan();
   const { habitTasks, overdueHabitTasks, toggleHabit } = useHabits();
-  const { character, colorway, setColorway, onboarded, hydrated, recordInteraction } = useProfile();
+  const {
+    character,
+    colorway,
+    setColorway,
+    onboarded,
+    hydrated,
+    recordInteraction,
+    reviveProgress,
+    recordRevive,
+  } = useProfile();
 
   // Single source of truth for HP + dead state, shared with the profile modal.
   const { hp, deadHours } = usePetHp();
-  useDeadStateTracker(hp);
+  useDeadStateTracker(hp, deadHours);
   const { state, meta } = usePetState(hp, deadHours);
 
   // Display: overdue habits at top (red section), then today's habits, then weekly tasks
@@ -50,9 +61,24 @@ export default function HomeScreen() {
     [overdueHabitTasks, habitTasks, tasks],
   );
 
+  const { effect, playEffect } = useEffectTimer();
+
+  const [keyboard, setKeyboard] = useState(false);
+  const [menu, setMenu] = useState<MenuId>('check');
+  const [toast, setToast] = useState({ visible: false, message: '' });
+
+  const showToast = useCallback((message: string) => {
+    setToast({ visible: true, message });
+    setTimeout(() => setToast(t => ({ ...t, visible: false })), 2200);
+  }, []);
+
   // Route toggles — overdue habit IDs encode the date: habit-YYYY-MM-DD-h-xxx
   const onToggle = useCallback(
     (id: string) => {
+      // Only a completing tap (incomplete → complete) on a ghost counts toward revival.
+      const task = allTasks.find(t => t.id === id);
+      const completing = task != null && !task.completed;
+
       if (id.startsWith('habit-')) {
         const rest = id.slice('habit-'.length);
         if (/^\d{4}-\d{2}-\d{2}-/.test(rest)) {
@@ -67,14 +93,20 @@ export default function HomeScreen() {
       } else {
         toggleTask(id);
       }
-    },
-    [toggleHabit, toggleTask],
-  );
-  const { effect, playEffect } = useEffectTimer();
 
-  const [keyboard, setKeyboard] = useState(false);
-  const [menu, setMenu] = useState<MenuId>('check');
-  const [toast, setToast] = useState({ visible: false, message: '' });
+      // Revive funnel: completing a task while a ghost advances the revive counter.
+      if (completing && state === 'dead') {
+        const revived = recordRevive();
+        if (revived) {
+          playEffect('purr', 1500);
+          showToast('✨ Revived!');
+        } else {
+          showToast(`Revive ${reviveProgress + 1}/${REVIVE_GOAL}`);
+        }
+      }
+    },
+    [toggleHabit, toggleTask, allTasks, state, recordRevive, reviveProgress, playEffect, showToast],
+  );
 
   // Energy is based on weekly plan tasks only (not habits), to keep it meaningful
   const DAY_LONGS: Record<string, string> = {
@@ -135,6 +167,7 @@ export default function HomeScreen() {
                 <View style={styles.petStage}>
                   <PetSprite character={character} state={state} cell={6} monochrome />
                   <PetPlatform state={state} />
+                  {state === 'dead' && <RevivalChip revival={reviveProgress} />}
                 </View>
                 <HeartsBurst visible={effect === 'purr'} />
                 <FoodBowl visible={effect === 'feed'} />

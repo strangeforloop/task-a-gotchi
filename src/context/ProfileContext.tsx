@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { CharacterId, ColorwayId, ProfileStore } from '../types';
 import { writeStore } from '../utils/storage';
 import { applyInteraction, decayMood, MOOD_START, type InteractionKind } from '../utils/mood';
+import { advanceRevive } from '../utils/revive';
 
 const PROFILE_KEY = 'task-a-gotchi:profile-v1';
 
@@ -13,6 +14,7 @@ const DEFAULT: ProfileStore = {
   onboarded: false,
   mood: MOOD_START,
   moodUpdatedAt: Date.now(),
+  reviveProgress: 0,
 };
 
 interface ProfileContextValue {
@@ -30,6 +32,10 @@ interface ProfileContextValue {
   setOnboarded: (value: boolean) => void;
   /** Record a pet interaction: decays mood to now, then applies the boost. */
   recordInteraction: (kind: InteractionKind) => void;
+  /** Tasks completed toward reviving the ghost (0..REVIVE_GOAL). */
+  reviveProgress: number;
+  /** Count a completed task toward revival; returns whether it resurrected the pet. */
+  recordRevive: () => boolean;
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
@@ -83,6 +89,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Advance the ghost revive counter. Returns whether this completion resurrected
+  // the pet; on resurrect we also clear hpZeroSince so the dead latch releases and
+  // HP recomputes from the just-completed tasks.
+  const recordRevive = useCallback((): boolean => {
+    const res = advanceRevive(profile.reviveProgress ?? 0);
+    update({
+      reviveProgress: res.reviveProgress,
+      ...(res.resurrected ? { hpZeroSince: null } : {}),
+    });
+    return res.resurrected;
+  }, [profile, update]);
+
   return (
     <ProfileContext.Provider
       value={{
@@ -98,6 +116,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         setHpZeroSince,
         setOnboarded,
         recordInteraction,
+        reviveProgress: profile.reviveProgress ?? 0,
+        recordRevive,
       }}
     >
       {children}

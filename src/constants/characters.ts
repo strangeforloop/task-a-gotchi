@@ -524,6 +524,48 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
   },
 };
 
+// Shared 8-bit ghost shown for ANY character once the pet is dead (HP=0 for 48h).
+// 18x18 to match the other sprites. B = body ink, E = cutout eyes (transparent),
+// '.' = empty. Frame B is a 1px bob of frame A.
+const GHOST_A: string[] = [
+  '..................',
+  '......BBBBBB......',
+  '....BBBBBBBBBB....',
+  '...BBBBBBBBBBBB...',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBEEBBBBBBEEBB..',
+  '..BBEEBBBBBBEEBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BBBBBBBBBBBBBB..',
+  '..BB..BB..BB..BB..',
+  '..................',
+  '..................',
+  '..................',
+];
+
+// Bob: shift down 1 row (drop last, pad top) — keeps every row 18 wide.
+const GHOST_B: string[] = ['..................', ...GHOST_A.slice(0, GHOST_A.length - 1)];
+
+export const GHOST_FRAMES: string[][] = [GHOST_A, GHOST_B];
+
+/**
+ * Frames for a given character + state. Dead → the shared ghost (ignores the
+ * character); every other state → the character's per-template frames.
+ */
+export function framesFor(
+  charDef: CharacterDef,
+  state: PetState,
+  tmplKey: StateTemplate['tmpl'],
+): string[][] {
+  if (state === 'dead') return GHOST_FRAMES;
+  return charDef[tmplKey] ?? charDef.normal;
+}
+
 export const STATE_TO_TEMPLATE: Record<PetState, StateTemplate> = {
   thriving: { tmpl: 'normal', interval: 600 },
   happy: { tmpl: 'normal', interval: 800 },

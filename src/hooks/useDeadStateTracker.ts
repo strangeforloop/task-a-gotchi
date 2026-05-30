@@ -10,14 +10,17 @@ import { useProfile } from '../context/ProfileContext';
  * Call this once, from the always-mounted home screen, so the timestamp has a
  * single writer.
  */
-export function useDeadStateTracker(hp: number): void {
+export function useDeadStateTracker(hp: number, deadHours: number): void {
   const { hpZeroSince, setHpZeroSince } = useProfile();
 
   useEffect(() => {
     if (hp <= 0 && hpZeroSince == null) {
       setHpZeroSince(Date.now());
-    } else if (hp > 0 && hpZeroSince != null) {
+    } else if (hp > 0 && hpZeroSince != null && deadHours < 48) {
+      // Auto-recover only within the 48h grace window. Once the pet is a ghost
+      // (>= 48h), the latch holds — only recordRevive (3 tasks) brings it back,
+      // otherwise the first task that nudges HP above 0 would auto-revive it.
       setHpZeroSince(null);
     }
-  }, [hp, hpZeroSince, setHpZeroSince]);
+  }, [hp, hpZeroSince, setHpZeroSince, deadHours]);
 }

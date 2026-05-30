@@ -119,4 +119,6 @@ export interface ProfileStore {
   mood?: number;
   /** Unix ms the mood was last changed — used to decay it over time. */
   moodUpdatedAt?: number;
+  /** Tasks completed toward reviving a ghost (0..REVIVE_GOAL). */
+  reviveProgress?: number;
 }

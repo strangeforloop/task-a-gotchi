@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { CharacterId, PetState } from '../../types';
-import { CHARACTERS, STATE_TO_TEMPLATE } from '../../constants/characters';
+import { CHARACTERS, STATE_TO_TEMPLATE, framesFor } from '../../constants/characters';
 import { LCD_INK } from '../../constants/colors';
 import { usePetAnimation } from '../../hooks/usePetAnimation';
 
@@ -26,7 +26,7 @@ export function PetSprite({
 
   const charDef = CHARACTERS[character] ?? CHARACTERS.blip;
   const tmplKey = (STATE_TO_TEMPLATE[displayState] ?? STATE_TO_TEMPLATE.happy).tmpl;
-  const frames = charDef[tmplKey] ?? charDef.normal;
+  const frames = framesFor(charDef, displayState, tmplKey);
   const sprite = frames[frame % frames.length];
   const W = sprite[0].length;
 
