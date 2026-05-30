@@ -39,6 +39,11 @@ export function TaskRow({ task, onToggle }: Props) {
             {overdueDuration ? <Text style={styles.overdueDuration}>{overdueDuration}</Text> : null}
           </View>
         )}
+        {task.overdue && task.completed && task.overdueFrom && (
+          <View style={styles.fromMetaRow}>
+            <Text style={styles.fromLabel}>from {task.overdueFrom}</Text>
+          </View>
+        )}
         {task.source === 'habit' && task.habitLateLabel && (
           <View style={styles.habitMetaRow}>
             <Text style={styles.habitLate}>{task.habitLateLabel}</Text>
@@ -77,6 +82,8 @@ const styles = StyleSheet.create({
   timeBadge: { fontSize: 11, fontWeight: '600', marginLeft: 4 },
   habitMetaRow: { marginTop: 2, marginLeft: 14 },
   habitLate: { fontSize: 11, fontWeight: '600', color: '#E8955A' },
+  fromMetaRow: { marginTop: 2, marginLeft: 14 },
+  fromLabel: { fontSize: 11, fontWeight: '600', color: 'rgba(60,60,67,0.5)' },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
