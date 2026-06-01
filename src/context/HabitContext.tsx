@@ -42,6 +42,11 @@ interface HabitContextValue {
     daysOfWeek?: DayId[],
     scheduledTime?: string,
   ) => void;
+  /** Edit an existing habit's title/frequency/days/time. Preserves id + createdAt (and streak). */
+  updateHabit: (
+    habitId: string,
+    patch: Partial<Pick<Habit, 'title' | 'frequency' | 'daysOfWeek' | 'scheduledTime'>>,
+  ) => void;
   removeHabit: (habitId: string) => void;
 }
 
@@ -168,6 +173,32 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
     [mutate, todayIso],
   );
 
+  const updateHabit = useCallback(
+    (
+      habitId: string,
+      patch: Partial<Pick<Habit, 'title' | 'frequency' | 'daysOfWeek' | 'scheduledTime'>>,
+    ) => {
+      mutate(s => ({
+        ...s,
+        habits: s.habits.map(h => {
+          if (h.id !== habitId) return h;
+          // Merge, then normalize: keep id/createdAt; drop daysOfWeek unless specific-days;
+          // drop scheduledTime when cleared.
+          const merged: Habit = { ...h, ...patch };
+          if (patch.title !== undefined) merged.title = patch.title.trim() || h.title;
+          if (merged.frequency !== 'specific-days') {
+            delete merged.daysOfWeek;
+          }
+          if ('scheduledTime' in patch && !patch.scheduledTime) {
+            delete merged.scheduledTime;
+          }
+          return merged;
+        }),
+      }));
+    },
+    [mutate],
+  );
+
   const removeHabit = useCallback(
     (habitId: string) => {
       mutate(s => ({ ...s, habits: s.habits.filter(h => h.id !== habitId) }));
@@ -184,6 +215,7 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
     habitLatePenalty,
     toggleHabit,
     addHabit,
+    updateHabit,
     removeHabit,
   };
 

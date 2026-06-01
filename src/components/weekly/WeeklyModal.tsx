@@ -7,8 +7,10 @@ import {
   TextInput,
   StyleSheet,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import type { Day, DayId, HabitFrequency, WeeklyTaskEntry } from '../../types';
+import type { Day, DayId, Habit, HabitFrequency, WeeklyTaskEntry } from '../../types';
 import { SectionLabel } from '../tasks/SectionLabel';
 import { HabitDots } from '../tasks/HabitDots';
 import { useHabits } from '../../context/HabitContext';
@@ -87,20 +89,25 @@ export function WeeklyModal({
         </Pressable>
       </View>
 
-      {topTab === 'plan' ? (
-        <PlanTab
-          weekDays={weekDays}
-          todayId={todayId}
-          templates={templates}
-          oneoffs={oneoffs}
-          addTemplate={addTemplate}
-          removeTemplate={removeTemplate}
-          addOneoff={addOneoff}
-          removeOneoff={removeOneoff}
-        />
-      ) : (
-        <HabitsTab />
-      )}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {topTab === 'plan' ? (
+          <PlanTab
+            weekDays={weekDays}
+            todayId={todayId}
+            templates={templates}
+            oneoffs={oneoffs}
+            addTemplate={addTemplate}
+            removeTemplate={removeTemplate}
+            addOneoff={addOneoff}
+            removeOneoff={removeOneoff}
+          />
+        ) : (
+          <HabitsTab />
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -308,9 +315,10 @@ const DAY_SHORTS: Record<DayId, string> = {
 };
 
 function HabitsTab() {
-  const { habits, completions, habitBonus, addHabit, removeHabit } = useHabits();
+  const { habits, completions, habitBonus, addHabit, updateHabit, removeHabit } = useHabits();
 
   const [step, setStep] = useState<AddingHabitStep>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [newFreq, setNewFreq] = useState<HabitFrequency>('daily');
   const [selectedDays, setSelectedDays] = useState<DayId[]>([]);
@@ -322,19 +330,34 @@ function HabitsTab() {
 
   function cancelAdd() {
     setStep(null);
+    setEditingId(null);
     setNewTitle('');
     setNewFreq('daily');
     setSelectedDays([]);
     setNewTime(undefined);
   }
 
+  function startEdit(habit: Habit) {
+    setEditingId(habit.id);
+    setNewTitle(habit.title);
+    setNewFreq(habit.frequency);
+    setSelectedDays(habit.daysOfWeek ?? []);
+    setNewTime(habit.scheduledTime);
+    setStep('title');
+  }
+
   function submitHabit(scheduledTime?: string) {
-    addHabit(
-      newTitle,
-      newFreq,
-      newFreq === 'specific-days' ? selectedDays : undefined,
-      scheduledTime,
-    );
+    const days = newFreq === 'specific-days' ? selectedDays : undefined;
+    if (editingId) {
+      updateHabit(editingId, {
+        title: newTitle,
+        frequency: newFreq,
+        daysOfWeek: days,
+        scheduledTime,
+      });
+    } else {
+      addHabit(newTitle, newFreq, days, scheduledTime);
+    }
     cancelAdd();
   }
 
@@ -374,6 +397,12 @@ function HabitsTab() {
               <HabitDots dots={dots} />
             </View>
             <Pressable
+              onPress={() => startEdit(habit)}
+              style={[styles.removeBtn, styles.removeBtnHabit]}
+            >
+              <Text style={styles.editTxt}>✎</Text>
+            </Pressable>
+            <Pressable
               onPress={() => removeHabit(habit.id)}
               style={[styles.removeBtn, styles.removeBtnHabit]}
             >
@@ -392,7 +421,7 @@ function HabitsTab() {
 
       {step === 'title' && (
         <View style={styles.addForm}>
-          <Text style={styles.formLabel}>Habit name</Text>
+          <Text style={styles.formLabel}>{editingId ? 'Edit habit' : 'Habit name'}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
@@ -525,6 +554,7 @@ function HabitsTab() {
 
 const styles = StyleSheet.create({
   sheet: { flex: 1, backgroundColor: '#FAF7F0' },
+  flex: { flex: 1 },
   handle: {
     width: 38,
     height: 5,
@@ -635,6 +665,7 @@ const styles = StyleSheet.create({
   },
   removeBtnHabit: { marginTop: 2 },
   removeTxt: { fontSize: 14, color: 'rgba(60,60,67,0.6)' },
+  editTxt: { fontSize: 13, color: 'rgba(60,60,67,0.6)' },
 
   // Add buttons
   addBtn: {
