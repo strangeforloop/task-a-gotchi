@@ -1,4 +1,5 @@
 import type { DayId, Habit, HabitFrequency, Task } from '../types';
+import { getIsoDate } from './weeklyPlan';
 
 const DAY_IDS: DayId[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const WEEKDAYS: DayId[] = ['mon', 'tue', 'wed', 'thu', 'fri'];
@@ -16,11 +17,14 @@ export function isHabitScheduledToday(habit: Habit, todayId: DayId): boolean {
 }
 
 /**
- * Counts how many consecutive days (ending on todayIso) this habit was completed.
- * Walks backwards through completions until it finds a gap.
+ * Counts the habit's current streak: consecutive *scheduled* days (ending today)
+ * on which it was completed. Days the habit wasn't scheduled are skipped — they
+ * neither extend nor break the streak — so a weekdays habit survives the weekend
+ * and a specific-days habit only counts its own days. A missed scheduled day
+ * stops the count. Uses local dates (getIsoDate), consistent with the rest of the app.
  */
 export function computeHabitStreak(
-  habitId: string,
+  habit: Habit,
   completions: Record<string, string[]>,
   todayIso: string,
 ): number {
@@ -28,9 +32,11 @@ export function computeHabitStreak(
   const cursor = new Date(todayIso + 'T00:00:00');
 
   for (let i = 0; i < 3650; i++) {
-    const iso = cursor.toISOString().slice(0, 10);
-    if (!(completions[iso] ?? []).includes(habitId)) break;
-    streak++;
+    if (isHabitScheduledToday(habit, dateToDay(cursor))) {
+      const iso = getIsoDate(cursor);
+      if (!(completions[iso] ?? []).includes(habit.id)) break;
+      streak++;
+    }
     cursor.setDate(cursor.getDate() - 1);
   }
 
@@ -57,7 +63,7 @@ export function computeHabitBonus(
   let bonus = 0;
   for (const habit of habits) {
     if (completedToday.has(habit.id)) {
-      const streak = computeHabitStreak(habit.id, completions, todayIso);
+      const streak = computeHabitStreak(habit, completions, todayIso);
       bonus += streakBonus(streak);
     }
   }
@@ -77,7 +83,7 @@ export function buildHabitDots(
   return DAY_IDS.map((_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const iso = d.toISOString().slice(0, 10);
+    const iso = getIsoDate(d);
     return (completions[iso] ?? []).includes(habitId);
   });
 }
@@ -107,7 +113,7 @@ export function getLastScheduledDate(habit: Habit, todayIso: string): string | n
   const cursor = new Date(todayIso + 'T00:00:00');
   for (let i = 0; i < 7; i++) {
     cursor.setDate(cursor.getDate() - 1);
-    const iso = cursor.toISOString().slice(0, 10);
+    const iso = getIsoDate(cursor);
     if (isHabitScheduledToday(habit, dateToDay(cursor))) return iso;
   }
   return null;
@@ -126,7 +132,7 @@ export function buildOverdueHabitTasks(
   now: Date,
   weekStart: string,
 ): Task[] {
-  const todayIso = now.toISOString().slice(0, 10);
+  const todayIso = getIsoDate(now);
   const tasks: Task[] = [];
 
   for (const h of habits) {

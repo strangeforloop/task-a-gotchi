@@ -382,7 +382,7 @@ function HabitsTab() {
       {/* Habit list */}
       {habits.map(habit => {
         const dots = buildHabitDots(habit.id, completions, weekStart);
-        const streak = computeHabitStreak(habit.id, completions, todayIso);
+        const streak = computeHabitStreak(habit, completions, todayIso);
         return (
           <View key={habit.id} style={styles.habitRow}>
             <View style={[styles.sourceDot, styles.sourceDotHabit]} />

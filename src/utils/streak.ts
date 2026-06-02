@@ -1,4 +1,5 @@
 import type { DayCompletions } from '../types';
+import { getIsoDate } from './weeklyPlan';
 
 /**
  * Count the number of consecutive days (backwards from `today`) that have
@@ -15,7 +16,7 @@ export function computeStreak(completions: Record<string, DayCompletions>, today
   const cursor = new Date(today + 'T00:00:00');
 
   for (let i = 0; i < 3650; i++) {
-    const iso = cursor.toISOString().slice(0, 10);
+    const iso = getIsoDate(cursor);
     const day = completions[iso];
     const hasAny = day !== undefined && (day.templateTitles.length > 0 || day.oneoffIds.length > 0);
     if (!hasAny) break;

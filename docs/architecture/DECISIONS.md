@@ -40,11 +40,13 @@ rule since: format the **local** date.
 **Edge cases.**
 - Anything that compares "did this happen today/this day" must build its key the same way, or it
   drifts by one near midnight.
-- ⚠️ **Known violation:** `computeHabitStreak` and `buildHabitDots` still use `toISOString()`.
-  Tracked in [issue #1](https://github.com/strangeforloop/task-a-gotchi/issues/1) and to be fixed
-  alongside the streak-schedule bug.
+- Tests that synthesize completion keys must also use `getIsoDate` (not `toISOString`), or they
+  pass under UTC-ish zones and fail under UTC-ahead ones (e.g. `Asia/Tokyo`). The suite is run
+  under multiple `TZ` values to catch this.
 
-**Status.** Enforced for new code; two legacy violations open (#1).
+**Status.** Enforced everywhere. The former `toISOString()` usages in `computeHabitStreak`,
+`buildHabitDots`, `getLastScheduledDate`, `buildOverdueHabitTasks`, and `computeStreak` were all
+converted to `getIsoDate` (issue #1).
 
 ---
 
@@ -62,9 +64,13 @@ almost never built a streak. That made streaks *look* like they reset at each we
 - Weekend on a weekdays habit → skipped, streak survives.
 - A genuinely missed weekday → resets.
 - Specific-days (e.g. Mon/Wed/Fri) → only those days count.
+- An unscheduled *today* → skipped, so the streak reflects the last scheduled run.
 
-**Status.** Behavior agreed; implementation pending in
-[issue #1](https://github.com/strangeforloop/task-a-gotchi/issues/1).
+**Implementation.** `computeHabitStreak(habit, completions, todayIso)` walks backward, consulting
+`isHabitScheduledToday` to skip non-scheduled days and breaking only on a missed scheduled one.
+It takes the whole `habit` (not just the id) so it can read the schedule — no separate helper.
+
+**Status.** Implemented and tested ([issue #1](https://github.com/strangeforloop/task-a-gotchi/issues/1)).
 
 ---
 

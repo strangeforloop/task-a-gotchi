@@ -1,4 +1,5 @@
 import { computeStreak } from '../utils/streak';
+import { getIsoDate } from '../utils/weeklyPlan';
 import type { DayCompletions } from '../types';
 
 // Fixed reference date: Wednesday 2026-05-27
@@ -59,7 +60,7 @@ describe('computeStreak', () => {
     for (let i = 0; i < 10; i++) {
       const d = new Date(base);
       d.setDate(d.getDate() - i);
-      completions[d.toISOString().slice(0, 10)] = comp([`Task ${i}`]);
+      completions[getIsoDate(d)] = comp([`Task ${i}`]);
     }
     expect(computeStreak(completions, TODAY)).toBe(10);
   });

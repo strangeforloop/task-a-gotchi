@@ -9,6 +9,7 @@ import {
   buildOverdueHabitTasks,
   frequencyLabel,
 } from '../utils/habits';
+import { getIsoDate } from '../utils/weeklyPlan';
 import type { Habit } from '../types';
 
 // Calendar reference (all dates in this file):
@@ -61,19 +62,20 @@ describe('isHabitScheduledToday', () => {
 
 describe('computeHabitStreak', () => {
   const TODAY = '2026-05-28'; // Thursday
+  const daily = makeHabit({ id: 'h-1', frequency: 'daily' });
 
   it('returns 0 when habit has never been completed', () => {
-    expect(computeHabitStreak('h-1', {}, TODAY)).toBe(0);
+    expect(computeHabitStreak(daily, {}, TODAY)).toBe(0);
   });
 
   it('returns 0 when habit is completed on past days but not today', () => {
     const completions = { '2026-05-27': ['h-1'] };
-    expect(computeHabitStreak('h-1', completions, TODAY)).toBe(0);
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(0);
   });
 
   it('returns 1 when completed only today', () => {
     const completions = { '2026-05-28': ['h-1'] };
-    expect(computeHabitStreak('h-1', completions, TODAY)).toBe(1);
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(1);
   });
 
   it('returns the full streak length for consecutive days ending today', () => {
@@ -82,7 +84,7 @@ describe('computeHabitStreak', () => {
       '2026-05-27': ['h-1'], // Wed
       '2026-05-28': ['h-1'], // Thu
     };
-    expect(computeHabitStreak('h-1', completions, TODAY)).toBe(3);
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(3);
   });
 
   it('stops counting at a gap in completions', () => {
@@ -92,7 +94,47 @@ describe('computeHabitStreak', () => {
       '2026-05-28': ['h-1'], // Thu
     };
     // Streak is 2 (Wed + Thu); Mon is before the gap (Tue missing)
-    expect(computeHabitStreak('h-1', completions, TODAY)).toBe(2);
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(2);
+  });
+
+  // ── schedule-aware behavior (issue #1) ──
+
+  it('skips the weekend so a weekdays habit streak survives into Monday', () => {
+    const h = makeHabit({ id: 'h-1', frequency: 'weekdays' });
+    const completions = {
+      '2026-05-29': ['h-1'], // Fri
+      '2026-06-01': ['h-1'], // Mon (Sat 05-30 / Sun 05-31 not scheduled → skipped)
+    };
+    expect(computeHabitStreak(h, completions, '2026-06-01')).toBe(2);
+  });
+
+  it('resets at a missed scheduled weekday', () => {
+    const h = makeHabit({ id: 'h-1', frequency: 'weekdays' });
+    const completions = {
+      '2026-05-27': ['h-1'], // Wed
+      '2026-05-28': ['h-1'], // Thu (today). Tue 05-26 is scheduled but missing.
+    };
+    expect(computeHabitStreak(h, completions, '2026-05-28')).toBe(2);
+  });
+
+  it('counts only scheduled days for a specific-days habit', () => {
+    const h = makeHabit({ id: 'h-1', frequency: 'specific-days', daysOfWeek: ['mon', 'wed', 'fri'] });
+    const completions = {
+      '2026-05-25': ['h-1'], // Mon
+      '2026-05-27': ['h-1'], // Wed
+      '2026-05-29': ['h-1'], // Fri (today). Tue/Thu not scheduled → skipped, not breaks.
+    };
+    expect(computeHabitStreak(h, completions, '2026-05-29')).toBe(3);
+  });
+
+  it('reflects the prior run when today is an unscheduled day', () => {
+    const h = makeHabit({ id: 'h-1', frequency: 'specific-days', daysOfWeek: ['mon', 'wed', 'fri'] });
+    const completions = {
+      '2026-05-25': ['h-1'], // Mon
+      '2026-05-27': ['h-1'], // Wed
+    };
+    // Today Thu 05-28 is not scheduled → skipped; counts Wed + Mon.
+    expect(computeHabitStreak(h, completions, '2026-05-28')).toBe(2);
   });
 });
 
@@ -140,12 +182,12 @@ describe('computeHabitBonus', () => {
   });
 
   it('applies higher streak bonus when streak is 7+', () => {
-    // Build a 7-day streak for h-1
+    // Build a 7-day streak for h-1 (h1 is daily, so every day counts)
     const completions: Record<string, string[]> = {};
     for (let i = 0; i < 7; i++) {
       const d = new Date('2026-05-28T00:00:00');
       d.setDate(d.getDate() - i);
-      completions[d.toISOString().slice(0, 10)] = ['h-1'];
+      completions[getIsoDate(d)] = ['h-1'];
     }
     expect(computeHabitBonus([h1], completions, TODAY)).toBe(3);
   });
