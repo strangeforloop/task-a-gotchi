@@ -13,15 +13,32 @@ Expo SDK 54 / expo-router v6 / RN 0.81.5 / TypeScript strict. A virtual pet (Tam
 - **Focus = the creative game side**: Tamagotchi feel, habits, *keeping it alive*, fun.
 - **Survival is tied to real tasks/habits ONLY.** Mood/interactions are a non-lethal "fun" layer.
 
-## Roadmap / plan file
-Full roadmap + detailed next-feature spec lives at:
-`/Users/fr-qlab01/.claude/plans/run-through-the-app-ancient-hamster.md`
-(Phases A=useful/safe, B=creative depth, C=ship+portfolio. The "▶ ACTIVE BUILD" section has the
-detailed revive-loop + ghost spec.)
+## Roadmap / docs (authoritative)
+The forward plan and design rationale now live in-repo (all dated 2026-06-03):
+- `docs/ROADMAP.md`: Shipped / Now / Next / Later horizons. **This is the source of truth for
+  what to build next.**
+- `docs/architecture/ARCHITECTURE.md`: how it's built.
+- `docs/architecture/DECISIONS.md`: why (decision log).
 
-## ✅ Done & verified this session
+The old plan file `/Users/fr-qlab01/.claude/plans/run-through-the-app-ancient-hamster.md` is now
+historical/superseded; prefer `docs/ROADMAP.md`.
+
+## ✅ Shipped since last handoff (now on `main`)
+The doc below previously listed the revive loop as "next" and the tree as uncommitted. Both are
+stale. Build is green: `npx tsc --noEmit` clean, **~161 tests across 11 files** (was 128). Landed
+commits (head `6b44654`, 2026-06-03), mirroring `docs/ROADMAP.md` Shipped:
+- `c94309c`: **Revive loop + shared 8-bit ghost (#15).** Dead 48h, then ghost, then 3 tasks
+  revive. Added `src/utils/revive.ts`, `GHOST_FRAMES` in `characters.ts`, `RevivalChip` wiring,
+  `ProfileStore.reviveProgress`, `useDeadStateTracker` latch.
+- `06dda95`: "from \<day\>" tag on completed overdue tasks (`TaskRow`).
+- `9efe48f`: edit habits (title / frequency / time) + keyboard-avoidance in the weekly modal.
+- `05677f9` / `c5c5c20`: architecture decision log, architecture diagram, and `ROADMAP.md`.
+- `ab6108b` (closed #1) + `6b44654`: schedule-aware, local-date habit streaks; today counts as
+  pending, not a miss.
+
+## ✅ Done & verified (earlier session, kept for context)
 All verified with `npx tsc --noEmit`, eslint (clean on touched files; 4 pre-existing
-inline-style warnings remain), and `npx jest` (**128 tests passing**).
+inline-style warnings remain), and `npx jest`.
 
 **Phase 1 — correctness bugs**
 - **Non-persistence root cause fixed:** `getIsoDate` (`src/utils/weeklyPlan.ts`) used UTC
@@ -54,32 +71,23 @@ inline-style warnings remain), and `npx jest` (**128 tests passing**).
 - A/B/C buttons (`app/index.tsx`) call `recordInteraction`.
 - `usePetMood()` hook; 💗 Mood bar on `app/profile.tsx`. `mood.test.ts` (9 tests).
 
-## ▶ NEXT (planned, NOT yet implemented) — Revive loop + shared ghost (task #15)
-User approved building it. Full spec in the plan file's ACTIVE BUILD section. Summary:
-- Dead pet (HP=0 for 48h) becomes a **Ghost**; completing **3 tasks** revives it (no time limit).
-- **Shared 8-bit ghost for ALL characters** when dead: add `GHOST_FRAMES` to
-  `src/constants/characters.ts` (18×18, 2-frame bob, `'B'` body, `'E'` cutout eyes); in
-  `PetSprite.tsx` branch on **`displayState === 'dead'`** to use it.
-- `src/utils/revive.ts`: `REVIVE_GOAL=3`, `advanceRevive(progress)→{reviveProgress, resurrected}`.
-- `ProfileStore.reviveProgress` (read `?? 0`); `recordRevive(): boolean` in `ProfileContext`
-  (on resurrect also sets `hpZeroSince=null`).
-- **Latch fix:** `useDeadStateTracker(hp, deadHours)` — only clear `hpZeroSince` when
-  `hp>0 && deadHours<48`; once `>=48` stay latched (else first task auto-revives, breaking the rule).
-- `app/index.tsx` `onToggle` (single funnel): if tapping completes a task AND `state==='dead'`,
-  call `recordRevive()`; on `true` fire celebration (`HeartsBurst`/`playEffect`) + "✨ Revived!" toast.
-- Wire existing `src/components/device/RevivalChip.tsx` ("Revive N/3") when dead.
-- Tests: `revive.test.ts`, a `framesFor` test.
+## ▶ NEXT (from `docs/ROADMAP.md` "Now")
+The revive loop (#15) is **done** (see above). Current next-up:
+- **Part 2: home-row 🔥 streak badge.** Surface per-habit streak on the home task rows (today it
+  only shows in the weekly modal). Thread `habitStreak` through `Task` from `HabitContext`; render
+  in `TaskRow`. Small; streak math is already correct post-#1.
+- **Part 3: stats screen (habits only).** Dedicated modal: multi-week heatmap, completion rate,
+  longest streak. Pure helpers in `src/utils/habits.ts` (local dates). Portfolio centerpiece;
+  habit history already persists, so no migration.
 
-**Other pending tasks:** #13 juicy interactions/finish effect animations, #14 pet evolution
-(egg→baby→teen→adult via streak), #16 stats/insights view, #17 supporting work (reminders via the
-already-installed `expo-notifications`, editing habits/tasks, settings+export, EAS distribution,
-hosted web demo, README case study).
+**Further out** (see ROADMAP Next/Later): rollover taxonomy (#2: which tasks lapse vs carry),
+edit/manage parity for weekly templates & one-offs, reminders via the already-installed
+`expo-notifications`, pet evolution (egg, baby, teen, adult), settings + export/import, persistence
+repo + schema migrations, and ship work (EAS, hosted web demo, README case study).
 
-## ⚠️ Git status — IMPORTANT
-**Nothing has been committed this session.** All changes are uncommitted on the working tree.
-The user asked to run **`save-plan`** (checkpoint code → write plan to `docs/plans/` → commit &
-push to GitHub) — **this was NOT completed.** `MISTAKES.md` mandates `/save-plan` after planning.
-Do this early in the next session (verify a git remote exists first).
+## Git status
+Working tree **clean**: all work above is committed. On `main`, in sync with
+`origin/main` (nothing unpushed). Remote: `https://github.com/strangeforloop/task-a-gotchi.git`.
 
 ## Verify / run
 ```bash
@@ -102,16 +110,23 @@ npx expo start --web                             # port 8081; another instance m
 - `app/`: expo-router screens — `index`, `onboarding`, `weekly`, `profile`, `character-chooser`,
   `_layout`. Providers nest **WeeklyPlan → Habit → Profile** (Profile innermost).
 - `src/context/`: `WeeklyPlanContext` (key `task-a-gotchi:weekly-v2`), `HabitContext`
-  (`habits-v1`), `ProfileContext` (`profile-v1`). All persist via `writeStore`.
-- `src/hooks/`: `usePetHp`, `useDeadStateTracker`, `useNow`, `usePetMood`, `usePetState`,
-  `useHealth`, `useEffectTimer`, `usePetAnimation`.
-- `src/utils/`: `weeklyPlan`, `health`, `habits`, `streak`, `mood`, `storage`, `id`, `format`,
-  `messages` (most are pure + unit-tested in `src/__tests__/`).
-- `src/components/`: `device/`, `pet/`, `tasks/`, `effects/`, `weekly/`, `shared/`.
+  (`habits-v1`), `ProfileContext` (`profile-v1`, holds `mood` + `reviveProgress`, exposes
+  `recordRevive()`). All persist via `writeStore`.
+- `src/hooks/`: `usePetHp`, `useDeadStateTracker` (latches dead once `deadHours>=48`), `useNow`,
+  `usePetMood`, `usePetState`, `useHealth`, `useEffectTimer`, `usePetAnimation`.
+- `src/utils/`: `weeklyPlan`, `health`, `habits`, `streak`, `mood`, `revive` (`REVIVE_GOAL=3`,
+  `advanceRevive`), `storage`, `id`, `format`, `messages` (most are pure + unit-tested in
+  `src/__tests__/`).
+- `src/components/`: `device/` (incl. `RevivalChip` "Revive N/3"), `pet/`, `tasks/`, `effects/`,
+  `weekly/`, `shared/`.
 - Pet sprites: pixel grids in `src/constants/characters.ts` (chars: blip/buni/nova; states map via
-  `STATE_TO_TEMPLATE`). HP→state via `stateForHealth` in `src/utils/health.ts`.
+  `STATE_TO_TEMPLATE`). HP→state via `stateForHealth` in `src/utils/health.ts`. When
+  `displayState === 'dead'`, `PetSprite` renders the shared `GHOST_FRAMES` for all characters.
 
 ## User preferences (persisted in memory)
 - Ask before adding to `docs/learning/concepts.md` (don't auto-add).
 - Prefers **conversational clarification** over the AskUserQuestion multiple-choice tool.
 - Prioritize the **creative Tamagotchi game side**; local-only v1 + portfolio.
+
+---
+_Snapshot reflects head `6b44654`, dated 2026-06-03._
