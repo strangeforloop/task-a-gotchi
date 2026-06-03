@@ -68,8 +68,23 @@ describe('computeHabitStreak', () => {
     expect(computeHabitStreak(daily, {}, TODAY)).toBe(0);
   });
 
-  it('returns 0 when habit is completed on past days but not today', () => {
+  it('holds the prior run when today is not yet done (today is pending, not a miss)', () => {
+    // Completed Wed (yesterday) but not Thu (today) → streak stays 1, does not drop to 0.
     const completions = { '2026-05-27': ['h-1'] };
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(1);
+  });
+
+  it('counts a multi-day prior run when today is still pending', () => {
+    const completions = {
+      '2026-05-26': ['h-1'], // Tue
+      '2026-05-27': ['h-1'], // Wed
+      // Thu (today) not done yet → pending
+    };
+    expect(computeHabitStreak(daily, completions, TODAY)).toBe(2);
+  });
+
+  it('still returns 0 when today is pending and there is no prior run', () => {
+    const completions = { '2026-05-25': ['h-1'] }; // Mon only; Tue/Wed missed
     expect(computeHabitStreak(daily, completions, TODAY)).toBe(0);
   });
 

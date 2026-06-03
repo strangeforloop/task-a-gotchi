@@ -54,21 +54,27 @@ converted to `getIsoDate` (issue #1).
 
 **Decision.** A habit's current streak counts back over its **scheduled** days only: days the
 habit was not scheduled are **skipped** (they don't extend or break the streak); a **missed
-scheduled day resets** it.
+scheduled day resets** it. **Today is treated as _pending_, not a miss** — a scheduled-but-not-
+yet-done today holds the prior run rather than dropping the streak to 0.
 
 **Context.** The original `computeHabitStreak` broke on the first calendar day with no completion,
 ignoring the schedule — so "weekdays" habits broke every weekend and "specific-days" habits
-almost never built a streak. That made streaks *look* like they reset at each week boundary.
+almost never built a streak. A second issue: because today is itself a scheduled day, the streak
+read 0 every morning until you completed the habit, which felt like an overnight reset. We adopted
+the common habit-app rule: the day only counts against you once it's over.
 
 **Edge cases.**
 - Weekend on a weekdays habit → skipped, streak survives.
-- A genuinely missed weekday → resets.
+- A genuinely missed *past* weekday → resets.
 - Specific-days (e.g. Mon/Wed/Fri) → only those days count.
 - An unscheduled *today* → skipped, so the streak reflects the last scheduled run.
+- A scheduled *today* not yet done → pending (skipped); streak holds at the prior run and only
+  resets if today ends still incomplete (i.e. once it becomes a *past* missed day).
 
 **Implementation.** `computeHabitStreak(habit, completions, todayIso)` walks backward, consulting
-`isHabitScheduledToday` to skip non-scheduled days and breaking only on a missed scheduled one.
-It takes the whole `habit` (not just the id) so it can read the schedule — no separate helper.
+`isHabitScheduledToday` to skip non-scheduled days and breaking only on a missed scheduled one. The
+cursor's first iteration (`i === 0`, today) never breaks the streak — a not-yet-done today is
+skipped. It takes the whole `habit` (not just the id) so it can read the schedule — no separate helper.
 
 **Status.** Implemented and tested ([issue #1](https://github.com/strangeforloop/task-a-gotchi/issues/1)).
 

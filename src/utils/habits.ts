@@ -21,7 +21,14 @@ export function isHabitScheduledToday(habit: Habit, todayId: DayId): boolean {
  * on which it was completed. Days the habit wasn't scheduled are skipped — they
  * neither extend nor break the streak — so a weekdays habit survives the weekend
  * and a specific-days habit only counts its own days. A missed scheduled day
- * stops the count. Uses local dates (getIsoDate), consistent with the rest of the app.
+ * stops the count.
+ *
+ * Today is treated as *pending*, not a miss: if the habit is scheduled today but
+ * not yet done, the streak holds at its prior run (it doesn't drop to 0 every
+ * morning). The day only counts against the streak once it is over — i.e. a
+ * not-yet-done today is skipped, while a not-done *past* scheduled day breaks it.
+ *
+ * Uses local dates (getIsoDate), consistent with the rest of the app.
  */
 export function computeHabitStreak(
   habit: Habit,
@@ -33,9 +40,14 @@ export function computeHabitStreak(
 
   for (let i = 0; i < 3650; i++) {
     if (isHabitScheduledToday(habit, dateToDay(cursor))) {
-      const iso = getIsoDate(cursor);
-      if (!(completions[iso] ?? []).includes(habit.id)) break;
-      streak++;
+      const done = (completions[getIsoDate(cursor)] ?? []).includes(habit.id);
+      if (done) {
+        streak++;
+      } else if (i !== 0) {
+        // A missed *past* scheduled day ends the streak. Today (i === 0) not yet
+        // done is pending, not a miss — skip it and keep counting the prior run.
+        break;
+      }
     }
     cursor.setDate(cursor.getDate() - 1);
   }

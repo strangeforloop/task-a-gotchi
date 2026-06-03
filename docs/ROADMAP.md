@@ -67,9 +67,6 @@ craft on display: tested pure-function core, documented decisions, accessible UI
 
 ## 🧹 Known debt / follow-ups
 
-- `.git/gc.log` housekeeping warning on push (cosmetic).
-- Mid-day "in-progress today" streak semantics intentionally unchanged (a scheduled-but-not-yet-done
-  today still breaks at today) — revisit if it feels wrong in use.
 - Package versions slightly behind Expo's expected set (`expo`, `expo-router`, `typescript`,
   `@types/jest`) — bump when convenient.
 
