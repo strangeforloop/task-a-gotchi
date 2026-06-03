@@ -31,6 +31,9 @@ export function TaskRow({ task, onToggle }: Props) {
           <Text style={[styles.title, task.completed && styles.titleDone]} numberOfLines={1}>
             {task.title}
           </Text>
+          {task.source === 'habit' && (task.habitStreak ?? 0) > 0 && (
+            <Text style={styles.streakBadge}>🔥 {task.habitStreak}</Text>
+          )}
           <Text style={[styles.timeBadge, { color: sourceDot }]}>{timeDisplay}</Text>
         </View>
         {isOverdue && (
@@ -79,6 +82,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3, marginLeft: 14 },
   overdueFrom: { fontSize: 11, fontWeight: '600', color: '#D85A30' },
   overdueDuration: { fontSize: 11, fontWeight: '400', color: 'rgba(216,90,48,0.55)' },
+  streakBadge: { fontSize: 11, fontWeight: '700', color: '#16A8CA' },
   timeBadge: { fontSize: 11, fontWeight: '600', marginLeft: 4 },
   habitMetaRow: { marginTop: 2, marginLeft: 14 },
   habitLate: { fontSize: 11, fontWeight: '600', color: '#E8955A' },

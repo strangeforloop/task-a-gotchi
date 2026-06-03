@@ -5,6 +5,7 @@ import {
   buildHabitDots,
   buildOverdueHabitTasks,
   computeHabitBonus,
+  computeHabitStreak,
   isHabitScheduledToday,
 } from '../utils/habits';
 import { computeHabitLateLabel, computeHabitLatePoints } from '../utils/format';
@@ -113,6 +114,7 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
           completed: done,
           habitId: h.id,
           habitDots: buildHabitDots(h.id, store.completions, weekStart),
+          habitStreak: computeHabitStreak(h, store.completions, todayIso),
           habitCreatedAt: h.createdAt,
           habitScheduledTime: h.scheduledTime,
           habitLateLabel: !done

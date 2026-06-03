@@ -20,6 +20,7 @@ export interface Task {
   createdAt?: number; // unix ms — set for one-off tasks only
   habitId?: string; // set when source === 'habit'
   habitDots?: boolean[]; // length 7 (Mon–Sun), pre-computed week completion chain
+  habitStreak?: number; // current consecutive-scheduled-day streak for this habit
   habitCreatedAt?: string; // ISO date the habit was created, for "started Xd ago"
   habitScheduledTime?: string; // "HH:MM" for time badge display
   habitLateLabel?: string; // "2h late" soft nudge when past scheduled time + not done
