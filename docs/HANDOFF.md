@@ -25,7 +25,7 @@ historical/superseded; prefer `docs/ROADMAP.md`.
 
 ## ✅ Shipped since last handoff (now on `main`)
 The doc below previously listed the revive loop as "next" and the tree as uncommitted. Both are
-stale. Build is green: `npx tsc --noEmit` clean, **~161 tests across 11 files** (was 128). Landed
+stale. Build is green: `npx tsc --noEmit` clean, **141 tests across 11 files** (was 128). Landed
 commits (head `6b44654`, 2026-06-03), mirroring `docs/ROADMAP.md` Shipped:
 - `c94309c`: **Revive loop + shared 8-bit ghost (#15).** Dead 48h, then ghost, then 3 tasks
   revive. Added `src/utils/revive.ts`, `GHOST_FRAMES` in `characters.ts`, `RevivalChip` wiring,
